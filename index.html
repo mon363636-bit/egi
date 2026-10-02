@@ -90,7 +90,8 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .rk .no{font-family:var(--font-display);font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .rk .nm2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rk .nm2 small{display:block;font-size:11px;color:var(--ink-2)}
-.rk .v{font-variant-numeric:tabular-nums;font-weight:700}
+.rk .v{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+.rk .v small{display:block;font-size:11px;font-weight:400;color:var(--ink-2)}
 .rk.me{border-left-color:var(--accent);background:var(--paper)}
 
 /* game screen: fixed night-sea palette regardless of theme */
@@ -148,7 +149,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 0.7</p>
+        <p class="eyebrow">テスト版 0.8</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -171,6 +172,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       <h2 class="sec">ランキング</h2>
       <div class="panel" id="rankBox" style="display:flex;flex-direction:column;gap:12px">
         <p class="fine" id="rankStatus">読み込み中…</p>
+        <p class="fine" id="rankHow"><b>点数のしくみ:</b> 釣れた1杯ごとに「重さ(g)÷10 × 魚種の係数」が加点されます(アオリイカ×1、コウイカ×0.8、ガシラ×0.3)。たとえばアオリ500gなら50点。4分間の合計がスコアで、各ポイントの自己ベストだけが残ります。「総合」は4か所のベストの合計、「最大アオリ」は最も重く釣ったアオリイカの重さです。</p>
         <div class="grp" id="nickRow" hidden><label class="lab" for="nick">ニックネーム(12文字まで)</label>
           <div style="display:flex;gap:8px"><input class="txt" id="nick" type="text" maxlength="12" autocomplete="off"><button class="btn" id="nickSave" type="button">保存</button></div></div>
         <div class="chips" id="rankTabs"></div>
@@ -178,7 +180,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       </div>
       <h2 class="sec">記録と図鑑</h2>
       <div class="panel" id="records"></div>
-      <p class="fine">潮は簡易計算、天気は仮データ、水深や地形は目安です。実際の釣行では立入禁止区域や釣り禁止の場所を必ず確認し、ゴミは持ち帰りましょう。ランキングは、Claudeで共有された状態で開いたときだけ使えます(自己申告のスコアなので、仲間内向けです)。</p>
+      <p class="fine">潮は簡易計算、天気は仮データ、水深や地形は目安です。実際の釣行では立入禁止区域や釣り禁止の場所を必ず確認し、ゴミは持ち帰りましょう。ランキングはネットにつながっていれば使えます(自己申告のスコアなので、仲間内向けです)。</p>
     </div>
   </section>
 
@@ -1697,12 +1699,13 @@ function myNick(){
 function rowsFor(tab){
   var out=[];
   RK.docs.forEach(function(r){
-    var d=r.d||{},b=(d.boards&&typeof d.boards==='object')?d.boards:{},v=0,sub='';
+    var d=r.d||{},b=(d.boards&&typeof d.boards==='object')?d.boards:{},v=0,g=0,sub='',bigPt='';
+    POINTS.forEach(function(p){var x=b[p.id];if(x&&numOk(x.w)>g){g=numOk(x.w);bigPt=PT_SHORT[p.id]||p.name}});
     if(tab==='tot'){var k=0;POINTS.forEach(function(p){var x=b[p.id];if(x&&numOk(x.s)>0){v+=numOk(x.s);k++}});sub=k+'か所';}
-    else if(tab==='big'){POINTS.forEach(function(p){var x=b[p.id];if(x)v=Math.max(v,numOk(x.w))});}
-    else{var x2=b[tab];if(!x2)return;v=numOk(x2.s);sub='最大 '+numOk(x2.w)+'g';}
+    else if(tab==='big'){v=g;sub=bigPt;g=0;}
+    else{var x2=b[tab];if(!x2)return;v=numOk(x2.s);g=numOk(x2.w);}
     if(v<=0)return;
-    out.push({id:r.id,nick:sanitizeNick(d.nick)||'名無し',v:v,sub:sub,t:Number(d.t)||0});
+    out.push({id:r.id,nick:sanitizeNick(d.nick)||'名無し',v:v,g:g,sub:sub,t:Number(d.t)||0});
   });
   out.sort(function(a,c){return c.v-a.v||a.t-c.t});
   return out;
@@ -1738,6 +1741,7 @@ function renderRank(){
       var b=document.createElement('span');b.className='nm2';b.textContent=r.nick;
       if(r.sub){var s=document.createElement('small');s.textContent=r.sub;b.appendChild(s)}
       var c=document.createElement('span');c.className='v';c.textContent=r.v+unit;
+      if(r.g>0){var gs=document.createElement('small');gs.textContent='最大アオリ '+r.g+'g';c.appendChild(gs)}
       row.appendChild(a);row.appendChild(b);row.appendChild(c);list.appendChild(row);
     });
   }
