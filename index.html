@@ -148,7 +148,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 0.2</p>
+        <p class="eyebrow">テスト版 0.6</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -1685,6 +1685,8 @@ function renderFps(ts){
 
 /* ---------- ランキング(Claudeの共有データ db を使用) ---------- */
 var RK={db:null,uid:null,mine:null,docs:[],tab:'tot',denied:false,canWrite:null,queue:Promise.resolve(),pendingPt:null,synced:false,state:'init',err:null};
+var FB_URL='https://real-egi-default-rtdb.asia-southeast1.firebasedatabase.app';
+RK.mode=null;
 var PT_SHORT={maiko:'舞子',iwaya:'岩屋',nanko:'南港',kada:'加太'};
 function sanitizeNick(s){return String(s||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,12)}
 function numOk(v){v=Number(v);return isFinite(v)?clamp(Math.round(v),0,99999):0}
@@ -1748,14 +1750,37 @@ function showResultRank(){
   if(!r.rank){el.hidden=true;return}
   el.hidden=false;el.textContent=(PT_SHORT[RK.pendingPt]||'')+'ランキング '+r.rank+'位 / '+r.total+'人中';
 }
+
+function fbLoad(){
+  return fetch(FB_URL+'/scores.json').then(function(r){if(!r.ok)throw new Error('http'+r.status);return r.json()}).then(function(o){
+    o=(o&&typeof o==='object')?o:{};
+    RK.docs=Object.keys(o).map(function(k){return {id:k,d:o[k]}});
+    var m=RK.docs.filter(function(x){return x.id===RK.uid})[0];RK.mine=m?m.d:null;RK.err=null;
+    renderRank();
+  });
+}
+function fbPut(doc){
+  return fetch(FB_URL+'/scores/'+encodeURIComponent(RK.uid)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(doc)}).then(function(r){if(!r.ok)throw {code:'http'+r.status};return r.json()});
+}
+function fbInit(){
+  if(!store.settings.uid){store.settings.uid='u'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,8);save()}
+  RK.uid=store.settings.uid;RK.nick=myNick();
+  return fbLoad().then(function(){
+    RK.mode='fb';RK.canWrite=true;RK.denied=false;RK.state='ok';
+    renderRank();rankSyncLocal();
+    setInterval(function(){fbLoad().catch(function(){})},30000);
+    return true;
+  }).catch(function(){RK.uid=null;RK.docs=[];RK.mine=null;return false});
+}
 function rankWrite(mutate){
-  if(!RK.db||!RK.uid||RK.denied||RK.canWrite===false)return Promise.resolve();
+  if(!RK.uid||(RK.mode!=='fb'&&(!RK.db||RK.denied||RK.canWrite===false)))return Promise.resolve();
   RK.queue=RK.queue.then(function(){
     var cur=RK.mine||{},boards=JSON.parse(JSON.stringify(cur.boards||{}));
     if(!mutate(boards,cur))return;
     var big=0;POINTS.forEach(function(p){if(boards[p.id])big=Math.max(big,numOk(boards[p.id].w))});
     var doc={nick:RK.nick,boards:boards,big:big,t:Date.now()};
-    return RK.db.doc('scores/'+RK.uid).set(doc).then(function(){RK.mine=doc;RK.err=null});
+    var wr=(RK.mode==='fb')?fbPut(doc):RK.db.doc('scores/'+RK.uid).set(doc);
+    return wr.then(function(){RK.mine=doc;RK.err=null;if(RK.mode==='fb')return fbLoad()});
   }).catch(function(e){if(e&&e.code==='invalid_argument')RK.denied=true;else RK.err=(e&&e.code)||'error';renderRank()});
   return RK.queue;
 }
@@ -1781,6 +1806,9 @@ function rankSyncLocal(){
   });
 }
 function rankInit(){
+  fbInit().then(function(ok){if(!ok)claudeInit()});
+}
+function claudeInit(){
   var cl=window.claude;
   if(!cl||typeof cl.use!=='function'){RK.state='off';renderRank();return}
   Promise.all([cl.use('user'),cl.use('db')]).then(function(r){
@@ -1882,7 +1910,7 @@ $('#rAgain').addEventListener('click',function(){startGame(G.pt,G.st,store.setti
 /* ---------- 起動 ---------- */
 renderToday();renderPoints();renderRecords();renderRank();show('menu');setTimeout(rankInit,0);
 rafId=requestAnimationFrame(loop);
-if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,setView:function(v){G.view=v;$('#stage').setAttribute('data-view',v)}};
+if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){G.view=v;$('#stage').setAttribute('data-view',v)}};
 })();
 </script>
 
