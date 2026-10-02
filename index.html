@@ -149,7 +149,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 0.8</p>
+        <p class="eyebrow">テスト版 0.9</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -1361,6 +1361,12 @@ function drawLine(c,ts){
 function drawSquid(s,alpha,ts){
   var L=14+22*Math.sqrt(s.w/1000),px=X(s.x),py=ZZ(s.z),excited=(s.state==='chase'||s.state==='hug'||s.state==='hooked'||s.state==='landing');
   var dim=clamp(1-s.z/16,.45,1)*(.5+.5*clamp(G.cond.L+.35,0,1));
+  if(s.state==='hooked'||s.state==='landing'){
+    // かかったイカは、エギの後ろのカンナ(フック)の後方に回り込む(エギ・フックが手前)
+    var ek=1.12*(G.egiSize?(.88+.09*G.egiSize.idx):1),ea=s.state==='landing'?.2:.12,hx0=11.4*ek,hy0=2.2*ek;
+    var reach=(s.sp==='gashira'?L*.44:L*.7);
+    px+=hx0*Math.cos(ea)-hy0*Math.sin(ea)+reach-2;py+=hx0*Math.sin(ea)+hy0*Math.cos(ea);
+  }
   ctx.save();ctx.translate(px,py);ctx.scale(s.dir,1);ctx.globalAlpha=alpha*s.fade*dim;
   if(s.sp==='gashira'){
     var gl=L*.8;ctx.fillStyle='#c4573a';ctx.beginPath();ctx.ellipse(0,0,gl*.55,gl*.3,0,0,6.283);ctx.fill();
@@ -1914,7 +1920,7 @@ $('#rAgain').addEventListener('click',function(){startGame(G.pt,G.st,store.setti
 /* ---------- 起動 ---------- */
 renderToday();renderPoints();renderRecords();renderRank();show('menu');setTimeout(rankInit,0);
 rafId=requestAnimationFrame(loop);
-if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){G.view=v;$('#stage').setAttribute('data-view',v)}};
+if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){G.view=v;$('#stage').setAttribute('data-view',v)}};
 })();
 </script>
 
