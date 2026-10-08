@@ -115,6 +115,27 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 #info .r{display:flex;justify-content:space-between;gap:10px}
 #info b{font-weight:700;color:#fff;text-align:right;font-variant-numeric:tabular-nums}
 .stage[data-view="fps"] #toast,.stage[data-view="3d"] #toast,.stage[data-view="uw"] #toast{top:auto;bottom:72px}
+.screen.game.look .hud,.screen.game.look .controls,.screen.game.look #count,.screen.game.look #info,.screen.game.look #toast,.screen.game.look .sheet{display:none!important}
+#lookUI{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;z-index:5}
+#lookUI[hidden]{display:none}
+#lookUI button{pointer-events:auto}
+.lk-top{display:flex;align-items:center;justify-content:space-between;padding:10px 12px}
+.lk-count{font-size:12px;padding:3px 10px;border-radius:99px;background:rgba(5,16,24,.6);border:1px solid rgba(120,160,175,.4);color:#e8f2f5;font-variant-numeric:tabular-nums}
+.lk-arrow{position:absolute;top:34%;width:40px;height:62px;border-radius:12px;background:rgba(5,16,24,.5);border:1px solid rgba(120,160,175,.4);color:#fff;font-size:30px;line-height:1;cursor:pointer}
+.lk-arrow.l{left:6px}.lk-arrow.r{right:6px}
+.lk-bot{padding:28px 14px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(3,10,15,.94) 62%,rgba(3,10,15,0));display:flex;flex-direction:column;gap:7px;color:#e8f2f5}
+.lk-bot h3{font-family:var(--font-display);font-weight:400;font-size:21px;line-height:1.25;margin:0;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.lk-bot p{margin:0;font-size:12.5px;line-height:1.55;color:#cfe0e6}
+.lk-area{font-size:11px;letter-spacing:.06em;color:#9fc0cb}
+.lk-bot .lk-cond{color:#ffd9e6;font-size:12px}
+.lk-bot .chip{color:#e8f2f5;border-color:rgba(200,225,235,.4);background:rgba(5,16,24,.5);pointer-events:auto;padding:4px 11px;min-height:32px}
+.lk-bot .chip[aria-pressed="true"]{background:#ff6f9c;color:#2a0615;border-color:#ff6f9c}
+.lk-dots{display:flex;gap:6px;justify-content:center;align-items:center;padding:6px 10px;border-radius:99px;background:rgba(5,16,24,.45)}
+.lk-dots i{width:6px;height:6px;border-radius:50%;background:rgba(200,225,235,.35)}
+.lk-dots i.on{background:#ff6f9c;width:16px;border-radius:99px}
+.lk-bot .lk-hint{text-align:center;font-size:11px;color:#8fb0bb}
+.lk-bot .btn.primary{pointer-events:auto;background:#ff6f9c;border-color:#ff6f9c;color:#2a0615}
+#lookFade{position:absolute;inset:0;background:#02080c;opacity:0;transition:opacity .18s;pointer-events:none;z-index:9}
 #toast.good{border-color:#4fcf9a}
 #toast.warn{border-color:#e3a54a}
 #toast.bad{border-color:#ff7b6b}
@@ -151,7 +172,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 1.0</p>
+        <p class="eyebrow">テスト版 1.1</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -170,6 +191,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       <h2 class="sec">今日の海</h2>
       <div class="panel today" id="today"></div>
       <h2 class="sec">ポイントを選ぶ</h2>
+      <button class="btn primary" id="lookBtn" type="button" style="width:100%">景色を3Dで見て選ぶ(左右にスワイプ)</button>
       <div id="points" class="wrap" style="gap:12px"></div>
       <h2 class="sec">ランキング</h2>
       <div class="panel" id="rankBox" style="display:flex;flex-direction:column;gap:12px">
@@ -251,6 +273,20 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       <div id="count" hidden></div>
       <div id="info" hidden></div>
       <div id="toast"></div>
+      <div id="lookUI" hidden>
+        <div class="lk-top"><button class="hbtn" id="lkBack" type="button">&lt; 戻る</button><div class="lk-dots" id="lkDots"></div><span class="lk-count" id="lkCount"></span></div>
+        <button class="lk-arrow l" id="lkPrev" type="button" aria-label="前のポイント">&lsaquo;</button>
+        <button class="lk-arrow r" id="lkNext" type="button" aria-label="次のポイント">&rsaquo;</button>
+        <div class="lk-bot">
+          <div class="lk-area" id="lkArea"></div>
+          <h3 id="lkName"></h3>
+          <p id="lkNote"></p>
+          <p class="lk-cond" id="lkCond"></p>
+          <div class="chips" id="lkTime"></div>
+          <button class="btn primary" id="lkGo" type="button">この立ち位置で釣る</button>
+        </div>
+        <div id="lookFade"></div>
+      </div>
       <div id="card" hidden></div>
       <div id="fightui" class="ovl" hidden>
         <div class="fr"><span id="fTxt">テンション</span><span id="fDist"></span></div>
@@ -548,10 +584,10 @@ function renderPoints(){
     var a=document.createElement('article');a.className='pt';
     a.innerHTML='<div class="pt-h"><h3>'+pt.name+'</h3><span class="area">'+pt.area+'</span></div><p>'+pt.blurb+'</p>'+profileSvg(pt.stands[0].profile,pt.stands[0].spots,pt.name+'の水深の断面',false)+
       '<div class="tags">'+pt.stands.map(function(s){return '<span class="tag" style="border-color:var(--accent);color:var(--ink)">立ち位置 '+s.name.replace(/^.+?・/,'')+'</span>'}).join('')+pt.tags.map(function(t){return '<span class="tag">'+t+'</span>'}).join('')+'</div>'+
-      '<button class="btn primary" type="button" data-pt="'+pt.id+'">このポイントで釣る</button>';
+      '<div style="display:flex;gap:8px">'+(t3Avail()?'<button class="btn" type="button" data-look="'+pt.id+'">景色を見る(3D)</button>':'')+'<button class="btn primary" style="flex:1" type="button" data-pt="'+pt.id+'">このポイントで釣る</button></div>';
     el.appendChild(a);
   });
-  el.onclick=function(e){var b=e.target.closest('button[data-pt]');if(b)openPrep(b.getAttribute('data-pt'))};
+  el.onclick=function(e){var l=e.target.closest('button[data-look]');if(l){lookStart(lookIndexOf(l.getAttribute('data-look')));return}var b=e.target.closest('button[data-pt]');if(b)openPrep(b.getAttribute('data-pt'))};
 }
 function renderRecords(){
   var el=$('#records'),rows='';
@@ -668,20 +704,23 @@ function shiftRips(){
   G.spots.forEach(function(o){if(o.kind==='rip'){o.x0=clamp(o.bx0+sh,6,54);o.x1=clamp(o.bx1+sh,10,58)}});
   G.ripRising=G.cond.rising;
 }
-function startGame(pt,stand,settings){
-  var S=Object.assign({},settings);
-  var c=makeCond(pt,stand,S);
-  var spots=stand.spots.map(function(sp){var o=Object.assign({},sp);o.bx0=o.x0;o.bx1=o.x1;return o});
-  G={pt:pt,st:stand,prof:stand.profile,S:S,cond:c,spots:spots,tk:tackleOf(S),egiSize:egiBySize(S.egi),colorId:S.color,easy:S.easy,
+function mkG(pt,stand,S,c,spots){
+  return {pt:pt,st:stand,prof:stand.profile,S:S,cond:c,spots:spots,tk:tackleOf(S),egiSize:egiBySize(S.egi),colorId:S.color,easy:S.easy,
      view:(S.view==='fps'||S.view==='3d'||S.view==='uw')?S.view:'side',c0:c.d0.getTime(),h0:c.hour,dynT:0,lastBand:c.band,ripRising:null,
      phase:'ready',timeLeft:240,t:0,score:0,catches:[],squids:[],aim:25,lockT:0,fx:[],markPh:0,
      egi:{x:0,z:0,mode:'fall',t:0,sinceJerk:99,jerkT:0,jerkLen:.38,jerkDz:1,jerkDx:.7,jerkKind:'tap',lastKind:'tap',pitch:0,bottomT:0,snagTries:0,flyT:0,flyDur:.9,landX:25,lastJerkAt:-9,lastInterval:null,heldBy:null,foot:false,surfT:0,lastSpeed:0},
      fatigue:0,cfat:{},spawnT:3,migT:8,hudT:0,chipT:0,over:false,land:null,fight:null,
      stats:{casts:0,hugs:0,refused:0,missedHug:0,hookFail:0,snags:0,breaks:0,bare:0,lost:0,landFail:0,foot:0,egiUse:{}}};
+}
+function startGame(pt,stand,settings){
+  var S=Object.assign({},settings);
+  var c=makeCond(pt,stand,S);
+  var spots=stand.spots.map(function(sp){var o=Object.assign({},sp);o.bx0=o.x0;o.bx1=o.x1;return o});
+  G=mkG(pt,stand,S,c,spots);
   EGI_COLORS.forEach(function(k){G.cfat[k.id]=0});
   shiftRips();
   var n=c.pop;for(var i=0;i<n;i++)G.squids.push(newSquid(false));
-  show('game');resize();if(is3dView(G.view)&&!t3Init()){G.view='fps';setTimeout(function(){toast('3D表示を使えないので「自分目線(2D)」にしました','warn',3200)},500)}$('#stage').setAttribute('data-view',G.view);$('#viewBtn').textContent=viewLabel(nextView());
+  lookOff();show('game');resize();if(is3dView(G.view)&&!t3Init()){G.view='fps';setTimeout(function(){toast('3D表示を使えないので「自分目線(2D)」にしました','warn',3200)},500)}$('#stage').setAttribute('data-view',G.view);$('#viewBtn').textContent=viewLabel(nextView());
   $('#gName').textContent=stand.name;
   $('#sndBtn').textContent=store.settings.sound?'音 ON':'音 OFF';
   buildChips();setMode('ready');
@@ -2385,10 +2424,19 @@ function t3UpdUw(U,c,ts,cp,uw){
 }
 
 /* ---- 組み立て ---- */
+function t3Dispose(root){
+  root.traverse(function(o){
+    if(o.geometry)o.geometry.dispose();
+    if(o.material){(o.material.length?o.material:[o.material]).forEach(function(m){
+      ['map','alphaMap','emissiveMap'].forEach(function(k){if(m[k])m[k].dispose()});
+      if(m.uniforms)for(var u in m.uniforms){var v=m.uniforms[u].value;if(v&&v.isTexture)v.dispose()}
+      m.dispose()})}
+  });
+}
 function t3Build(){
   if(T3.world){
-    T3.sc.remove(T3.world);T3.world.traverse(function(o){if(o.geometry)o.geometry.dispose();if(o.material){(o.material.length?o.material:[o.material]).forEach(function(m){m.dispose()})}});
-    if(T3.rod)T3.cam.remove(T3.rod.g);
+    T3.sc.remove(T3.world);t3Dispose(T3.world);
+    if(T3.rod){T3.cam.remove(T3.rod.g);t3Dispose(T3.rod.g)}
   }
   var W=new THREE.Group();T3.world=W;T3.sc.add(W);T3.sg=null;T3.fxFree={};T3.fxLive=[];T3.sq={};T3.puff=null;
   var c=G.cond;
@@ -2455,7 +2503,7 @@ function t3Rig(ts,dt,lat){
     dpos.y=Math.min(dpos.y,-.55);
     var sbH=-seabed(clamp(-dpos.z,0,60))+.4;dpos.y=Math.max(dpos.y,sbH);
     dtg=new THREE.Vector3(ep.x,ep.y+(land?.1:0),ep.z-.35);
-  }else{dpos=new THREE.Vector3(0,T3H,T3Z0);dtg=new THREE.Vector3(0,T3H-(G.phase==='land'?28:0),-100)}
+  }else{dpos=new THREE.Vector3(0,T3H,T3Z0);dtg=new THREE.Vector3(G.look?Math.sin(ts/5200)*15:0,T3H-(G.phase==='land'?28:0),-100)}
   var rate=1-Math.exp(-dt*(wantUw?(G.phase==='fight'?6:3.6):3));
   T3.cp.lerp(dpos,rate);T3.tg2.lerp(dtg,rate);
   T3.camFp+=((wantUw?0:1)-T3.camFp)*Math.min(1,dt*2.8);
@@ -2561,6 +2609,7 @@ function render3D(ts){
   Object.keys(T3.sq).forEach(function(id){if(!seen[id])T3.sq[id].root.visible=false});
   // エフェクト
   T3.seq=(T3.seq||0)+1;t3UpdFx(ts,lat,T3.seq);t3ReleaseFx(T3.seq);
+  if(G.look){Eg.g.visible=false;T3.lineA.mesh.visible=false;T3.lineB.mesh.visible=false}
   T3.rd.render(T3.sc,T3.cam);
   t3Overlay(ts,c,uw,fpShow,lat);
 }
@@ -2570,11 +2619,11 @@ function t3Overlay(ts,c,uw,fpShow,lat){
   var E=G.egi;ctx.clearRect(0,0,CW,CH);
   if(fpShow&&!uw&&G.phase!=='land'){
     ctx.font='9px sans-serif';ctx.textAlign='left';
-    for(var d=10;d<=40;d+=10){var pq=t3Proj(0,0,-d);ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;ctx.setLineDash([2,6]);ctx.beginPath();ctx.moveTo(26,pq.y);ctx.lineTo(CW,pq.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillText(d+'m',5,pq.y+3)}
+    if(!G.look)for(var d=10;d<=40;d+=10){var pq=t3Proj(0,0,-d);ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;ctx.setLineDash([2,6]);ctx.beginPath();ctx.moveTo(26,pq.y);ctx.lineTo(CW,pq.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillText(d+'m',5,pq.y+3)}
     if(c.weather==='雨'){
       ctx.strokeStyle='rgba(200,220,235,.34)';ctx.lineWidth=1;for(var r=0;r<46;r++){var rx2=(r*73+ts/5)%CW,ry=((r*41)+ts/2.4)%CH;ctx.beginPath();ctx.moveTo(rx2,ry);ctx.lineTo(rx2-3,ry+9);ctx.stroke()}
     }
-    if(G.phase==='ready'){
+    if(G.phase==='ready'&&!G.look){
       var mx=G.tk.rod.max-G.tk.pe.castMinus,a=Math.min(G.aim,mx),c0=t3Proj(0,0,-a),cx=t3Proj(3.5,0,-a),cz1=t3Proj(0,0,-a+3.5),cz2=t3Proj(0,0,-a-3.5);
       var rx=Math.abs(cx.x-c0.x),ry=Math.abs(cz1.y-cz2.y)/2,my=t3Proj(0,0,-mx).y;
       ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=1;ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,my);ctx.lineTo(CW,my);ctx.stroke();ctx.setLineDash([]);
@@ -2601,7 +2650,7 @@ function t3Overlay(ts,c,uw,fpShow,lat){
     });
   }
   if(fpShow&&!uw){ctx.fillStyle=css(mixc([22,30,36],[112,120,126],c.L));ctx.fillRect(0,CH-5,CW,5)}
-  fpMini(c,ts);
+  if(!G.look)fpMini(c,ts);
   if(c.L<.25&&!uw){var vg=ctx.createRadialGradient(CW*.5,CH*.5,CH*.3,CW*.5,CH*.5,CH*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,8,'+(.35*(1-c.L*4))+')');ctx.fillStyle=vg;ctx.fillRect(0,0,CW,CH)}
   if(uw){var vg2=ctx.createRadialGradient(CW*.5,CH*.5,CH*.25,CW*.5,CH*.5,CH*.75);vg2.addColorStop(0,'rgba(0,10,20,0)');vg2.addColorStop(1,'rgba(0,10,20,.4)');ctx.fillStyle=vg2;ctx.fillRect(0,0,CW,CH)}
 }
@@ -2617,13 +2666,75 @@ function applyView(v){
   G.view=v;$('#stage').setAttribute('data-view',v);$('#viewBtn').textContent=viewLabel(nextView());G.hudT=0;resize();
 }
 
+/* ---------- 景色を見て選ぶ(3Dプレビュー) ---------- */
+var LOOKS=[],lookIdx=0,lookBusy=false,lookOn=false;
+POINTS.forEach(function(pt){pt.stands.forEach(function(st){LOOKS.push({pt:pt,st:st})})});
+function lookIndexOf(ptId){for(var i=0;i<LOOKS.length;i++)if(LOOKS[i].pt.id===ptId)return i;return 0}
+function lookOff(){lookOn=false;lookBusy=false;$('#s-game').classList.remove('look');$('#lookUI').hidden=true}
+function lookBuild(i){
+  lookIdx=(i+LOOKS.length)%LOOKS.length;var L=LOOKS[lookIdx];
+  var S=Object.assign({},store.settings,{view:'3d'});
+  var c=makeCond(L.pt,L.st,S);
+  var spots=L.st.spots.map(function(sp){var o=Object.assign({},sp);o.bx0=o.x0;o.bx1=o.x1;return o});
+  G=mkG(L.pt,L.st,S,c,spots);G.look=true;G.squids=[];G.view='3d';G.over=true;
+  lastTs=0;
+}
+function lookUI(){
+  var L=LOOKS[lookIdx],c=G.cond;
+  $('#lkArea').textContent=L.pt.area;$('#lkName').textContent=L.st.name;$('#lkNote').textContent=L.st.note;
+  $('#lkCond').textContent=c.dateLabel+' '+fmtH(c.hour)+'・'+c.bandLabel+'・'+c.weather+'・'+c.tideName+(c.rising?'(上げ)':'(下げ)');
+  $('#lkCount').textContent=(lookIdx+1)+' / '+LOOKS.length;
+  var dots='';for(var i=0;i<LOOKS.length;i++)dots+='<i'+(i===lookIdx?' class="on"':'')+'></i>';$('#lkDots').innerHTML=dots;
+  chipGroup($('#lkTime'),[{v:'now',label:'いま'},{v:'dawn',label:'朝マズメ'},{v:'day',label:'日中'},{v:'dusk',label:'夕マズメ'},{v:'night',label:'夜'}],
+    function(){return store.settings.timeMode},function(v){store.settings.timeMode=v;save();lookGo(lookIdx)});
+}
+function lookGo(i){
+  if(lookBusy)return;lookBusy=true;
+  var f=$('#lookFade');f.style.opacity=1;
+  setTimeout(function(){
+    if(!lookOn){lookBusy=false;return}
+    lookBuild(i);lookUI();
+    setTimeout(function(){f.style.opacity=0;lookBusy=false},120);
+  },190);
+}
+function lookStart(i){
+  if(!t3Avail())return;
+  lookOn=true;show('game');$('#s-game').classList.add('look');$('#lookUI').hidden=false;resize();
+  if(!t3Init()){lookOff();show('menu');return}
+  $('#stage').setAttribute('data-view','3d');setMode('ready');
+  var f=$('#lookFade');f.style.transition='none';f.style.opacity=1;void f.offsetWidth;f.style.transition='';
+  lookBusy=false;lookBuild(i);lookUI();
+  setTimeout(function(){f.style.opacity=0},260);
+}
+function lookBind(){
+  var lb=$('#lookBtn');lb.hidden=!t3Avail();
+  lb.addEventListener('click',function(){lookStart(0)});
+  $('#lkPrev').addEventListener('click',function(){lookGo(lookIdx-1)});
+  $('#lkNext').addEventListener('click',function(){lookGo(lookIdx+1)});
+  $('#lkBack').addEventListener('click',function(){lookOff();show('menu')});
+  $('#lkGo').addEventListener('click',function(){
+    var L=LOOKS[lookIdx];store.settings.stands[L.pt.id]=L.st.id;save();lookOff();openPrep(L.pt.id);
+  });
+  var st=$('#stage'),sx=0,sy=0,sd=false;
+  st.addEventListener('pointerdown',function(e){if(!lookOn||e.target.closest('button'))return;sd=true;sx=e.clientX;sy=e.clientY});
+  st.addEventListener('pointerup',function(e){
+    if(!lookOn||!sd)return;sd=false;var dx=e.clientX-sx,dy=e.clientY-sy;
+    if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.4)lookGo(lookIdx+(dx<0?1:-1));
+  });
+  st.addEventListener('pointercancel',function(){sd=false});
+  window.addEventListener('keydown',function(e){
+    if(!lookOn)return;
+    if(e.code==='ArrowLeft'){e.preventDefault();lookGo(lookIdx-1)}else if(e.code==='ArrowRight'){e.preventDefault();lookGo(lookIdx+1)}
+  });
+}
+
 /* ---------- ループとHUD ---------- */
 var rafId=0,pausedFlag=false;
 function loop(ts){
   rafId=requestAnimationFrame(loop);
   if(!G||screens.game.hidden)return;
   if(!lastTs)lastTs=ts;var dt=Math.min(.05,(ts-lastTs)/1000);lastTs=ts;
-  if(!pausedFlag)update(dt);
+  if(!pausedFlag&&!G.look)update(dt);
   render(ts);
   G.hudT-=dt;if(G.hudT<=0){G.hudT=.1;hud()}
 }
@@ -2689,6 +2800,7 @@ function openSheet(){
 }
 $('#sheetOk').addEventListener('click',function(){$('#sheet').hidden=true;pausedFlag=false;lastTs=0;store.settings.egi=G.S.egi;store.settings.color=G.S.color;save()});
 $('#prepBack').addEventListener('click',function(){show('menu')});
+lookBind();
 $('#goBtn').addEventListener('click',function(){AU.init();AU.resume();startGame(prepPt,curStand(),store.settings)});
 $('#rMenu').addEventListener('click',function(){show('menu');renderRecords()});
 $('#rAgain').addEventListener('click',function(){startGame(G.pt,G.st,store.settings)});
