@@ -206,7 +206,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 1.3</p>
+        <p class="eyebrow">テスト版 1.4</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -219,7 +219,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
       <h2 class="sec">ランキング</h2>
       <div class="panel" id="rankBox" style="display:flex;flex-direction:column;gap:12px">
         <p class="fine" id="rankStatus">読み込み中…</p>
-        <p class="fine" id="rankHow"><b>点数のしくみ:</b> 釣れた1杯ごとに「重さ(g)÷10 × 魚種の係数」が加点されます(アオリイカ×1、コウイカ×0.8、ガシラ×0.3)。たとえばアオリ500gなら50点。4分間の合計がスコアで、各ポイントの自己ベストだけが残ります。「総合」は4か所のベストの合計、「最大アオリ」は最も重く釣ったアオリイカの重さです。</p>
+        <p class="fine" id="rankHow"><b>点数のしくみ:</b> 釣れた1杯ごとに「重さ(g)÷10 × 魚種の係数」が加点されます(アオリイカ×1、コウイカ×0.8、ガシラ×0.3)。たとえばアオリ500gなら50点。4分間の合計がスコアで、各ポイントの自己ベストだけが残ります。「総合」は全ポイントのベストの合計、「最大アオリ」は最も重く釣ったアオリイカの重さです。</p>
         <div class="grp" id="nickRow" hidden><label class="lab" for="nick">ニックネーム(12文字まで)</label>
           <div style="display:flex;gap:8px"><input class="txt" id="nick" type="text" maxlength="12" autocomplete="off"><button class="btn" id="nickSave" type="button">保存</button></div></div>
         <div class="chips" id="rankTabs"></div>
@@ -248,6 +248,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
       <div class="panel" style="display:flex;flex-direction:column;gap:12px">
         <div class="grp"><span class="lab">日付</span><div class="chips" id="cDate"></div></div>
         <div class="grp"><span class="lab">時間帯</span><div class="chips" id="cTime"></div></div>
+        <div class="grp"><span class="lab">天気・潮のデータ</span><div class="chips" id="cLive"></div></div>
         <div class="stars" id="forecast"></div>
         <div class="why" id="why"></div>
         <div id="condBox" class="today"></div>
@@ -393,42 +394,85 @@ var EGI_COLORS=[
 var SPECIES={
   aori:{name:'アオリイカ',mult:1},
   kou:{name:'コウイカ',mult:.8},
-  gashira:{name:'ガシラ(カサゴ)',mult:.3}
+  gashira:{name:'ガシラ(カサゴ)',mult:.3},
+  yari:{name:'ヤリイカ',mult:.9}
 };
 function sp(id,name,kind,x0,x1,z0,z1){return {id:id,name:name,kind:kind,x0:x0,x1:x1,z0:z0,z1:z1}}
 function ST(id,name,note,flow,profile,spots,extra){return Object.assign({id:id,name:name,note:note,flow:flow,profile:profile,spots:spots},extra||{})}
 var POINTS=[
- {id:'maiko',name:'舞子・明石海峡大橋の下',area:'兵庫・神戸市垂水区',blurb:'橋脚の影と速い潮。潮が動く時間帯に強い、海峡のポイント。',press:.6,actBonus:1.0,scenery:'bridge',tags:['橋脚の影','潮目','速い潮'],
+ {id:'maiko',lat:34.628,lon:135.03,name:'舞子・明石海峡大橋の下',area:'兵庫・神戸市垂水区',blurb:'橋脚の影と速い潮。潮が動く時間帯に強い、海峡のポイント。',press:.6,actBonus:1.0,scenery:'bridge',tags:['橋脚の影','潮目','速い潮'],
   stands:[
    ST('umi','舞子海岸・橋の真下','橋脚が目の前。速い潮が当たり、日中は橋脚の影が効く。',1.5,[[0,3],[6,5],[16,9],[28,12],[42,14],[60,14]],
      [sp('rock','足元の岩','rock',3,10,1.5,4.5),sp('pier','橋脚の影','pier',22,31,2,10),sp('rip','潮目','rip',36,46,1,8),sp('deep','沖の深場','deep',48,58,8,13),sp('sand','砂地','sand',44,58,10,13.5)],{tower:26.5}),
    ST('gyoko','舞子漁港・堤防の先','流れが少し和らぐ港寄り。足元の岩とシモリ、沖に砂地。',1.0,[[0,4],[8,6],[18,8],[30,10],[45,12],[60,12]],
      [sp('wall','堤防の際','wall',2,6,1,4),sp('rock','シモリ','rock',12,20,3,6.5),sp('weed','藻場','weed',24,34,4,8),sp('rip','潮目','rip',38,48,2,8),sp('sand','砂地','sand',42,57,9,11.5)],{tower:50,far:true})
   ]},
- {id:'iwaya',name:'岩屋港',area:'兵庫・淡路市(淡路島側)',blurb:'海峡の対岸の港。常夜灯と藻場があり、時間帯の読みが効く。',press:.7,actBonus:1.0,scenery:'hills',tags:['常夜灯','藻場','堤防の角'],
+ {id:'iwaya',lat:34.6,lon:135.015,name:'岩屋港',area:'兵庫・淡路市(淡路島側)',blurb:'海峡の対岸の港。常夜灯と藻場があり、時間帯の読みが効く。',press:.7,actBonus:1.0,scenery:'hills',tags:['常夜灯','藻場','堤防の角'],
   stands:[
    ST('naka','岩屋港・内側の岸壁','港内で流れは穏やか。常夜灯の下と藻場が見どころ。',1.0,[[0,4],[8,6],[18,8],[30,10],[45,12],[60,12]],
      [sp('wall','岸壁の角','wall',2,6,1,4),sp('light','常夜灯の下','light',6,14,1,4),sp('weed','藻場','weed',18,30,4,8),sp('deep','港口の深み','deep',40,54,7,11),sp('sand','砂地','sand',36,56,9,11.8)],{lamp:10}),
    ST('soto','岩屋・外向きの堤防','海峡の流れが直接当たる外向き。潮目と岩が絡む。',1.4,[[0,5],[8,8],[18,10],[30,12],[45,14],[60,14]],
      [sp('rock','堤防の根','rock',3,12,2,6),sp('rip','潮目','rip',34,46,2,9),sp('weed','藻場','weed',16,28,5,9),sp('deep','沖の深み','deep',46,58,9,13),sp('sand','砂地','sand',44,58,11,13.8)],{})
   ]},
- {id:'nanko',name:'大阪南港',area:'大阪府・大阪市住之江区',blurb:'通いやすい近場。常夜灯と護岸が中心で、釣られやすく警戒もされやすい。',press:1.6,actBonus:.95,scenery:'city',tags:['常夜灯','護岸の角','警戒されやすい'],
+ {id:'yura',lat:34.245,lon:134.985,name:'由良(生石公園前)',area:'兵庫県・洲本市(淡路島南部)',blurb:'紀淡海峡に面した潮通しのよい港と磯。流れが速く、型を狙えるポイント。',press:.45,actBonus:1.06,scenery:'islands',tags:['紀淡海峡','潮が速い','磯と藻場'],
+  stands:[
+   ST('yr_minato','由良港・堤防','港の外側の堤防。足元にシモリ、沖に藻場と潮目が続く。',1.2,[[0,4],[8,6],[18,9],[30,11],[45,13],[60,14]],
+     [sp('wall','堤防の際','wall',2,6,1,4),sp('rock','シモリ','rock',14,24,3,7),sp('weed','藻場','weed',26,36,5,9),sp('rip','潮目','rip',40,52,2,9),sp('deep','沖の深み','deep',46,58,8,12),sp('sand','砂地','sand',44,58,10,13.5)],{}),
+   ST('yr_ishi','由良・外向きの磯','海峡の流れが直接当たる磯。根掛かりに注意だが、大型の期待は高い。',1.45,[[0,3],[6,5],[14,8],[26,11],[44,14],[60,15]],
+     [sp('rock','磯の根','rock',3,16,2,6),sp('weed','藻場','weed',18,30,4,8),sp('rip','潮目','rip',34,48,2,10),sp('deep','沖の深み','deep',46,58,9,14),sp('sand','砂地','sand',44,58,11,14)],{})
+  ]},
+ {id:'sumoto',lat:34.340,lon:134.915,name:'洲本港',area:'兵庫県・洲本市(淡路島東岸)',blurb:'大阪湾側の大きな港。内側は穏やか、外向きの堤防は潮が当たる。',press:1.05,actBonus:.98,scenery:'hills',tags:['常夜灯','堤防','港'],
+  stands:[
+   ST('sm_soto','洲本港・外向きの堤防','港の外側。潮目とシモリが絡み、日によって潮がよく動く。',1.1,[[0,4],[8,6],[18,8],[30,10],[45,12],[60,13]],
+     [sp('wall','堤防の際','wall',2,6,1,4),sp('rock','シモリ','rock',12,22,3,6.5),sp('weed','藻場','weed',24,34,4,8),sp('rip','潮目','rip',38,50,2,9),sp('sand','砂地','sand',42,57,9,11.5)],{}),
+   ST('sm_naka','洲本港・内側の岸壁','港内で流れは穏やか。常夜灯の下と藻場が見どころ。',.55,[[0,4],[8,5],[20,7],[35,9],[60,10]],
+     [sp('light','常夜灯の下','light',5,13,1,3.5),sp('wall','岸壁の角','wall',14,19,2,5),sp('weed','藻場','weed',20,32,4,7),sp('deep','港口の深み','deep',40,54,6,9),sp('sand','砂地','sand',36,56,7.5,9.8)],{lamp:9})
+  ]},
+ {id:'nanko',lat:34.61,lon:135.4,name:'大阪南港',area:'大阪府・大阪市住之江区',blurb:'通いやすい近場。常夜灯と護岸が中心で、釣られやすく警戒もされやすい。',press:1.6,actBonus:.95,scenery:'city',tags:['常夜灯','護岸の角','警戒されやすい'],
   stands:[
    ST('goan','南港・護岸(常夜灯あり)','足元から落ちる護岸。常夜灯の明暗と捨石が狙い目。',.6,[[0,3],[10,5],[25,7],[45,8],[60,9]],
      [sp('light','常夜灯の下','light',5,13,1,3.5),sp('wall','護岸の角','wall',14,19,2,5),sp('rock','捨石','rock',24,34,4,7),sp('deep','沖の深み','deep',42,55,5,8),sp('sand','砂地','sand',36,58,6.5,8.8)],{lamp:9}),
    ST('tsuno','南港・外向きの角','やや流れが出る角。常夜灯は遠く、潮の向きが効く。',.9,[[0,3.5],[8,5],[20,7],[40,9],[60,10]],
      [sp('wall','角の際','wall',2,7,1,4),sp('rip','潮目','rip',20,32,1,6),sp('rock','捨石','rock',14,22,3,6.5),sp('deep','沖の深み','deep',40,56,6,9.5),sp('sand','砂地','sand',34,58,7,9.8)],{})
   ]},
- {id:'kada',name:'加太',area:'和歌山県・和歌山市',blurb:'岩と藻場、速い潮流。根掛かりに注意しつつ、大型にも期待できる。',press:.7,actBonus:1.05,scenery:'islands',tags:['シモリ(岩)','藻場','根掛かり注意'],
+ {id:'kishiwada',lat:34.470,lon:135.340,name:'岸和田',area:'大阪府・岸和田市',blurb:'泉州の定番。旧港の岸壁と外向きの防波堤があり、通いやすい分だけ警戒もされやすい。',press:1.4,actBonus:.92,scenery:'city',tags:['常夜灯','岸壁','警戒されやすい'],
+  stands:[
+   ST('ks_kyuko','岸和田・旧港の岸壁','常夜灯のある岸壁。足元の明暗と捨石が狙い目で、流れは穏やか。',.5,[[0,3],[10,5],[25,7],[45,8],[60,9]],
+     [sp('light','常夜灯の下','light',5,13,1,3.5),sp('wall','岸壁の角','wall',14,19,2,5),sp('rock','捨石','rock',24,34,4,7),sp('deep','沖の深み','deep',42,55,5,8),sp('sand','砂地','sand',36,58,6.5,8.8)],{lamp:9}),
+   ST('ks_bohatei','岸和田・防波堤の外向き','外海に向いた防波堤。潮目が出やすく、常夜灯は遠い。',.8,[[0,3.5],[8,5],[20,7],[40,9],[60,10]],
+     [sp('wall','防波堤の際','wall',2,7,1,4),sp('rip','潮目','rip',20,32,1,6),sp('rock','捨石','rock',14,22,3,6.5),sp('deep','沖の深み','deep',40,56,6,9.5),sp('sand','砂地','sand',34,58,7,9.8)],{})
+  ]},
+ {id:'rinku',lat:34.430,lon:135.270,name:'りんくう(泉佐野)',area:'大阪府・泉佐野市',blurb:'関空を望む埋立地の護岸。常夜灯の明暗と、外向きの角で釣り分けられる。',press:1.3,actBonus:.95,scenery:'city',tags:['常夜灯','護岸','外向きの角'],
+  stands:[
+   ST('rk_gogan','りんくう・護岸(常夜灯あり)','足元から落ちる護岸。常夜灯の下と捨石を丁寧に探る。',.65,[[0,3],[8,5],[20,7],[40,9],[60,10]],
+     [sp('light','常夜灯の下','light',6,14,1,3.5),sp('wall','護岸の角','wall',15,20,2,5),sp('rock','捨石','rock',24,34,3.5,6.5),sp('deep','沖の深み','deep',42,56,6,9),sp('sand','砂地','sand',36,58,7,9.5)],{lamp:10}),
+   ST('rk_soto','りんくう・外向きの角','やや流れが出る角。潮の向きと捨石の際が効く。',.95,[[0,4],[8,6],[20,8],[40,10],[60,11]],
+     [sp('wall','角の際','wall',2,7,1,4),sp('rip','潮目','rip',22,34,1,6.5),sp('rock','捨石','rock',12,22,3,6.5),sp('deep','沖の深み','deep',40,56,7,10.5),sp('sand','砂地','sand',34,58,8,10.5)],{})
+  ]},
+ {id:'kojima',lat:34.300,lon:135.115,name:'小島(とっとパーク)',area:'大阪府・泉南郡岬町',blurb:'大阪府の南端、加太の対岸。護岸の常夜灯と、外向きの堤防で潮が効く。',press:1.0,actBonus:1.0,scenery:'islands',tags:['常夜灯','護岸','潮目'],
+  stands:[
+   ST('kj_park','とっとパーク小島・護岸','港の護岸。常夜灯の下と捨石、沖に砂地。',.8,[[0,3.5],[8,5],[20,7],[40,9],[60,11]],
+     [sp('light','常夜灯の下','light',4,12,1,3.5),sp('wall','護岸の角','wall',14,19,2,5),sp('rock','捨石','rock',22,32,3,6.5),sp('rip','潮目','rip',36,48,1,7),sp('sand','砂地','sand',40,58,7,10)],{lamp:8}),
+   ST('kj_soto','小島・外向きの堤防','紀淡海峡の流れが回り込む堤防。潮目と藻場が見どころ。',1.1,[[0,4],[8,6],[18,9],[32,11],[46,13],[60,14]],
+     [sp('rock','堤防の根','rock',3,14,2,6),sp('weed','藻場','weed',16,28,4,8),sp('rip','潮目','rip',34,46,2,9),sp('deep','沖の深み','deep',46,58,9,13),sp('sand','砂地','sand',44,58,10.5,13)],{})
+  ]},
+ {id:'kada',lat:34.275,lon:135.1,name:'加太',area:'和歌山県・和歌山市',blurb:'岩と藻場、速い潮流。根掛かりに注意しつつ、大型にも期待できる。',press:.7,actBonus:1.05,scenery:'islands',tags:['シモリ(岩)','藻場','根掛かり注意'],
   stands:[
    ST('teibo','加太・堤防の先','沖に向かって藻場とシモリが続く。潮流が当たる沖が一級。',1.1,[[0,4],[8,6],[16,8],[28,10],[44,13],[60,14]],
      [sp('wall','足元','wall',2,7,1,4),sp('rock','シモリ','rock',12,22,3,7),sp('weed','藻場','weed',25,36,5,9),sp('rip','潮流','rip',40,56,3,11),sp('sand','砂地','sand',44,58,11,13.8)],{}),
    ST('iso','加太・磯寄り','岩が多く根掛かりしやすいが、反応は濃い。',1.2,[[0,3],[6,5],[14,7],[26,9],[44,12],[60,13]],
      [sp('rock','岩礁','rock',4,18,2,6),sp('weed','藻場','weed',20,32,4,8),sp('rip','潮目','rip',38,52,2,9),sp('deep','沖の深み','deep',46,58,8,12),sp('sand','砂地','sand',44,58,10,12.8)],{})
+  ]} ,
+ {id:'saika',lat:34.205,lon:135.080,name:'雑賀崎',area:'和歌山県・和歌山市',blurb:'磯と小さな漁港が並ぶ岬。岩場は根掛かりに注意、漁港側は穏やか。',press:.55,actBonus:1.05,scenery:'islands',tags:['磯','藻場','根掛かり注意'],
+  stands:[
+   ST('sk_iso','雑賀崎・磯','岩が多く足場に注意。潮が当たる沖のブレイクが一級。',1.3,[[0,3],[6,5],[14,8],[26,10],[44,12],[60,13]],
+     [sp('rock','磯の根','rock',3,16,2,6),sp('weed','藻場','weed',18,30,4,8),sp('rip','潮目','rip',36,50,2,9),sp('deep','沖の深み','deep',46,58,8,12),sp('sand','砂地','sand',44,58,10,12.5)],{}),
+   ST('sk_ko','雑賀崎・漁港の堤防','漁港の堤防。常夜灯があり、藻場と潮目を探る。',.9,[[0,4],[8,6],[18,8],[30,10],[45,12],[60,12]],
+     [sp('light','常夜灯の下','light',4,10,1,3.5),sp('wall','堤防の際','wall',12,17,2,5),sp('weed','藻場','weed',20,32,4,8),sp('rip','潮目','rip',38,50,2,8),sp('sand','砂地','sand',42,57,9,11.5)],{lamp:7})
   ]}
 ];
 var BAND_LABEL={dawn:'朝マズメ',day:'日中',dusk:'夕マズメ',night:'夜'};
-var DEFAULTS={dateMode:'today',timeMode:'now',rod:8.3,pe:0.6,lead:1.75,egi:3.0,color:'pink',easy:true,sound:true,view:'side',stands:{}};
+var DEFAULTS={live:true,dateMode:'today',timeMode:'now',rod:8.3,pe:0.6,lead:1.75,egi:3.0,color:'pink',easy:true,sound:true,view:'side',stands:{}};
 var LS_KEY='real-egi-v2';
 var store={settings:Object.assign({},DEFAULTS),best:{},log:[],dex:{},stat:null,badges:{},games:0};
 try{var raw=localStorage.getItem(LS_KEY)||localStorage.getItem('real-egi-v1');if(raw){var o=JSON.parse(raw);store.settings=Object.assign({},DEFAULTS,o.settings||{});if(!store.settings.stands)store.settings.stands={};store.best=o.best||{};store.log=o.log||[];store.dex=o.dex||{};store.stat=o.stat||null;store.badges=o.badges||{};store.games=o.games||0}}catch(e){}
@@ -479,7 +523,7 @@ function factors(c,pt){
   return {act:clamp(bandAct*tideF*tempF*wxF*pt.actBonus,.15,1),bandAct:bandAct,tideF:tideF,tempF:tempF,wxF:wxF};
 }
 function applyDyn(c,d,pt){
-  var h=d.getHours()+d.getMinutes()/60+d.getSeconds()/3600,t=tideAt(d);
+  var h=d.getHours()+d.getMinutes()/60+d.getSeconds()/3600,t=tideFor(d,c);
   c.date=d;c.hour=h;c.band=bandOf(h,c.sr,c.ss);c.bandLabel=BAND_LABEL[c.band];
   c.level=t.level;c.flow01=t.flow01;c.rising=t.rising;
   c.age=moonAge(d);c.tideName=tideName(c.age);c.light=lightKey(c);
@@ -493,8 +537,12 @@ function makeCond(pt,stand,set){
   var now=new Date(),d=new Date(now.getTime());
   if(set.dateMode==='autumn')d=new Date(now.getFullYear(),9,15,12,0);
   else if(set.dateMode==='spring')d=new Date(now.getFullYear(),3,20,12,0);
+  else if(set.dateMode==='winter')d=new Date(now.getFullYear(),0,20,12,0);
+  else if(set.dateMode==='tomorrow')d=new Date(now.getTime()+86400000);
   var doy=dayOfYear(d),cs=Math.cos(2*Math.PI*(doy-172)/365);
   var sr=6-1.3*cs,ss=18+1.3*cs;
+  var LVe=liveOn(set)?LIVE.get(pt):null;
+  if(LVe){var dk=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()),dy=LVe.days[dk];if(dy){sr=dy.sr;ss=dy.ss}}
   var nowH=now.getHours()+now.getMinutes()/60,h;
   if(set.timeMode==='now')h=nowH;else if(set.timeMode==='dawn')h=sr+.2;else if(set.timeMode==='day')h=12.5;else if(set.timeMode==='dusk')h=ss-.5;else h=21.5;
   d.setHours(Math.floor(h),Math.round((h-Math.floor(h))*60),0,0);
@@ -505,12 +553,23 @@ function makeCond(pt,stand,set){
   var dirs=['北','北東','東','南東','南','南西','西','北西'],windDir=dirs[Math.floor(rg()*8)];
   var clarity=weather==='雨'?'濁り':(rg()<.3?'やや濁り':'澄み');
   var temp=19.5+8.5*Math.cos(2*Math.PI*(doy-225)/365);
+  var wv=.2+wind*.12,lc=LVe?LIVE.cond(pt,d):null;
+  if(lc){
+    var a=lc.a,dd8=['北','北東','東','南東','南','南西','西','北西'];
+    weather=(lc.prec6>=.5||a.prec>=.2||a.code>=51)?'雨':(a.cloud<40&&a.code<=3)?'晴れ':'曇り';
+    if(a.wind!=null)wind=clamp(a.wind,0,20);
+    if(a.dir!=null)windDir=dd8[Math.round(a.dir/45)%8];
+    wv=a.wave!=null?clamp(.12+a.wave*.8,.15,1.5):.2+wind*.12;
+    if(a.sst!=null)temp=clamp(a.sst,8,32);
+    clarity=weather==='雨'?'濁り':(wv>.7?'やや濁り':'澄み');
+  }
   var season=seasonOf(d),S=SEASON[season];
-  var c={d0:new Date(d.getTime()),sr:sr,ss:ss,weather:weather,wind:wind,windDir:windDir,wave:.2+wind*.12,clarity:clarity,temp:temp,season:season,seasonLabel:S.label,wary:S.wary,seasonPop:S.pop,dateLabel:(d.getMonth()+1)+'/'+d.getDate()};
+  var c={d0:new Date(d.getTime()),sr:sr,ss:ss,weather:weather,wind:wind,windDir:windDir,wave:wv,clarity:clarity,temp:temp,season:season,seasonLabel:S.label,wary:S.wary,seasonPop:S.pop,dateLabel:(d.getMonth()+1)+'/'+d.getDate(),src:lc?'live':'sim'};
+  if(lc)c.live=lc;
   applyDyn(c,d,pt);
   c.pop=Math.round(clamp((2.5+4*c.act)*S.pop,2,9));
   var base=new Date(d.getTime());base.setHours(0,0,0,0);
-  var lv=[];for(var i=0;i<=144;i++){lv.push(tideAt(new Date(base.getTime()+i*600000)).level)}
+  var lv=[];for(var i=0;i<=144;i++){lv.push(tideFor(new Date(base.getTime()+i*600000),c).level)}
   var hi=[],lo=[];for(var j=1;j<144;j++){if(lv[j]>lv[j-1]&&lv[j]>=lv[j+1])hi.push(j/6);if(lv[j]<lv[j-1]&&lv[j]<=lv[j+1])lo.push(j/6)}
   c.highs=hi;c.lows=lo;
   return c;
@@ -620,6 +679,57 @@ var AU={ctx:null,master:null,nb:null,amb:null,tickT:0,
   }
 };
 
+/* ---------- v1.4: 天気・潮の実データ(Open-Meteo。登録不要・無料) ---------- */
+var LIVE={cache:{},busy:{},ttl:30*60e3,retry:3*60e3};
+LIVE.get=function(pt){var e=this.cache[pt.id];return (e&&e.ok&&Date.now()-e.t<this.ttl*4)?e:null};
+LIVE.state=function(pt){var e=this.cache[pt.id];if(e&&e.ok)return 'ok';if(this.busy[pt.id])return 'loading';if(e)return 'fail';return 'none'};
+function liveT(s){return Date.parse(s+':00+09:00')}
+function liveJson(url){
+  var ac=typeof AbortController!=='undefined'?new AbortController():null,tm=ac&&setTimeout(function(){ac.abort()},7000);
+  return fetch(url,ac?{signal:ac.signal}:{}).then(function(r){clearTimeout(tm);if(!r.ok)throw new Error('http '+r.status);return r.json()});
+}
+LIVE.ensure=function(pt){
+  var self=this,e=this.cache[pt.id],now=Date.now();
+  if(!pt.lat||!window.fetch)return Promise.resolve(null);
+  if(e&&e.ok&&now-e.t<this.ttl)return Promise.resolve(e);
+  if(e&&!e.ok&&now-e.t<this.retry)return Promise.resolve(null);
+  if(this.busy[pt.id])return this.busy[pt.id];
+  var q='latitude='+pt.lat+'&longitude='+pt.lon+'&timezone=Asia%2FTokyo&forecast_days=3';
+  var p=Promise.all([
+    liveJson('https://api.open-meteo.com/v1/forecast?'+q+'&hourly=weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,precipitation&daily=sunrise,sunset&wind_speed_unit=ms'),
+    liveJson('https://marine-api.open-meteo.com/v1/marine?'+q+'&hourly=wave_height,sea_surface_temperature,sea_level_height_msl')
+  ]).then(function(r){
+    var f=r[0],m=r[1],H=f.hourly,M=m.hourly,hours=[],i,mi={};
+    for(i=0;i<M.time.length;i++)mi[M.time[i]]=i;
+    for(i=0;i<H.time.length;i++){var k=mi[H.time[i]];hours.push({t:liveT(H.time[i]),code:H.weather_code[i],cloud:H.cloud_cover[i],wind:H.wind_speed_10m[i],dir:H.wind_direction_10m[i],prec:H.precipitation[i]||0,wave:k!=null?M.wave_height[k]:null,sst:k!=null?M.sea_surface_temperature[k]:null,sea:k!=null?M.sea_level_height_msl[k]:null})}
+    var days={};
+    for(i=0;i<f.daily.time.length;i++){var sr=f.daily.sunrise[i],ss=f.daily.sunset[i];days[f.daily.time[i]]={sr:+sr.slice(11,13)+sr.slice(14,16)/60,ss:+ss.slice(11,13)+ss.slice(14,16)/60}}
+    var sv=hours.map(function(h){return h.sea}).filter(function(v){return v!=null});
+    if(hours.length<24||sv.length<24)throw new Error('short');
+    var mn=Math.min.apply(null,sv),mx=Math.max.apply(null,sv),rate=0;
+    for(i=1;i<hours.length;i++){if(hours[i].sea!=null&&hours[i-1].sea!=null)rate=Math.max(rate,Math.abs(hours[i].sea-hours[i-1].sea))}
+    var ent={ok:true,t:Date.now(),hours:hours,days:days,mid:(mn+mx)/2,half:Math.max(.2,(mx-mn)/2),rate:Math.max(.05,rate)};
+    self.cache[pt.id]=ent;delete self.busy[pt.id];return ent;
+  }).catch(function(){self.cache[pt.id]={ok:false,t:Date.now()};delete self.busy[pt.id];return null});
+  this.busy[pt.id]=p;return p;
+};
+LIVE.cond=function(pt,d){
+  var e=this.get(pt);if(!e)return null;
+  var ms=d.getTime(),h=e.hours,i=Math.floor((ms-h[0].t)/3600000);
+  if(i<0||i>=h.length-1)return null;
+  var key=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+  var prec=0;for(var k=Math.max(0,i-5);k<=i;k++)prec+=h[k].prec||0;
+  return {e:e,a:h[i],prec6:prec,day:e.days[key]||null};
+};
+function tideFor(d,c){
+  var e=c&&c.live&&c.live.e;if(!e)return tideAt(d);
+  var ms=d.getTime(),h=e.hours,i=Math.floor((ms-h[0].t)/3600000);
+  if(i<0||i>=h.length-1||h[i].sea==null||h[i+1].sea==null)return tideAt(d);
+  var f=(ms-h[i].t)/3600000,dv=h[i+1].sea-h[i].sea,v=h[i].sea+dv*f;
+  return {level:clamp((v-e.mid)/e.half,-1.1,1.1),flow01:clamp(Math.abs(dv)/e.rate,0,1),rising:dv>0};
+}
+function liveOn(set){return set.live!==false&&(set.dateMode==='today'||set.dateMode==='tomorrow')}
+
 /* ---------- メニュー・準備画面 ---------- */
 var screens={menu:$('#s-menu'),prep:$('#s-prep'),game:$('#s-game'),result:$('#s-result')};
 function show(name){for(var k in screens){screens[k].hidden=(k!==name)}if(name!=='game'&&screens[name])screens[name].scrollTop=0}
@@ -640,12 +750,17 @@ function profileSvg(profile,spots,ariaLabel,showLabels){
   });
   return '<svg class="prof" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+ariaLabel+'" style="color:var(--ink)"><path d="'+d+'" fill="var(--ink)" opacity=".16"/><line x1="6" y1="'+top+'" x2="'+(W-6)+'" y2="'+top+'" stroke="currentColor" stroke-width="1" opacity=".5"/>'+sp+'<path d="'+line+'" fill="none" stroke="currentColor" stroke-width="1.4"/>'+t+lab+'</svg>';
 }
+function srcTxt(c,pt,set){
+  if(c.src==='live')return '実データ(気象データ)';
+  if(!liveOn(set))return set.live===false?'簡易計算(選択)':'簡易計算(例の日)';
+  var s=LIVE.state(pt);return s==='fail'?'簡易計算(通信できず)':s==='ok'?'簡易計算':'取得中…';
+}
 function renderToday(){
-  var c=makeCond(POINTS[0],POINTS[0].stands[0],{dateMode:'today',timeMode:'now'});
+  var c=makeCond(POINTS[0],POINTS[0].stands[0],{dateMode:'today',timeMode:'now',live:store.settings.live});
   var hi=c.highs.map(fmtH).join(' / '),lo=c.lows.map(fmtH).join(' / ');
   $('#today').innerHTML=
    kv('日付',c.dateLabel+' '+fmtH(c.hour))+kv('月齢',c.age.toFixed(1))+kv('潮',c.tideName+(c.rising?'(上げ)':'(下げ)'))+kv('時間帯',c.bandLabel)+
-   kv('日の出',fmtH(c.sr))+kv('日の入',fmtH(c.ss))+kv('満潮',hi)+kv('干潮',lo);
+   kv('日の出',fmtH(c.sr))+kv('日の入',fmtH(c.ss))+kv('満潮',hi)+kv('干潮',lo)+kv('データ',srcTxt(c,POINTS[0],{dateMode:'today',live:store.settings.live}));
 }
 function renderPoints(){
   var el=$('#points');el.innerHTML='';
@@ -667,7 +782,7 @@ function chipGroup(el,opts,getVal,setVal){
 }
 var prepPt=null;
 function curStand(){return standOf(prepPt,store.settings.stands[prepPt.id])}
-function openPrep(id){prepPt=ptById(id);show('prep');renderPrep()}
+function openPrep(id){prepPt=ptById(id);show('prep');renderPrep();var p0=prepPt;LIVE.ensure(p0).then(function(){if(prepPt===p0&&$('#condBox'))refreshCond()})}
 function colorOpts(){return EGI_COLORS.map(function(c){return {v:c.id,html:'<span class="sw" style="background:linear-gradient(135deg,'+c.c1+','+c.c2+')"></span>'+c.name}})}
 function egiOpts(){return EGI_SIZES.map(function(e){return {v:e.n,html:e.n.toFixed(1)+'号 <span style="opacity:.6;font-size:11px">約'+e.g+'g</span>'}})}
 function renderPrep(){
@@ -676,7 +791,8 @@ function renderPrep(){
   var upd=function(){save();refreshCond()};
   chipGroup($('#cStand'),pt.stands.map(function(s){return {v:s.id,label:s.name}}),function(){return curStand().id},function(v){S.stands[pt.id]=v;save();standInfo();refreshCond()});
   standInfo();
-  chipGroup($('#cDate'),[{v:'today',label:'今日'},{v:'autumn',label:'秋の例(10/15)'},{v:'spring',label:'春の例(4/20)'}],function(){return S.dateMode},function(v){S.dateMode=v;upd()});
+  chipGroup($('#cDate'),[{v:'today',label:'今日'},{v:'tomorrow',label:'あした'},{v:'autumn',label:'秋の例(10/15)'},{v:'winter',label:'冬の例(1/20)'},{v:'spring',label:'春の例(4/20)'}],function(){return S.dateMode},function(v){S.dateMode=v;upd()});
+  chipGroup($('#cLive'),[{v:true,label:'実データ(ネット)'},{v:false,label:'簡易計算'}],function(){return S.live!==false},function(v){S.live=v;upd()});
   chipGroup($('#cTime'),[{v:'now',label:'いま'},{v:'dawn',label:'朝マズメ'},{v:'day',label:'日中'},{v:'dusk',label:'夕マズメ'},{v:'night',label:'夜'}],function(){return S.timeMode},function(v){S.timeMode=v;upd()});
   chipGroup($('#cRod'),[{v:8.3,label:'8.3ft(扱いやすい)'},{v:8.6,label:'8.6ft(よく飛ぶ)'}],function(){return S.rod},function(v){S.rod=v;save()});
   chipGroup($('#cPe'),[{v:0.6,label:'PE 0.6号'},{v:0.8,label:'PE 0.8号'}],function(){return S.pe},function(v){S.pe=v;save()});
@@ -700,7 +816,7 @@ function refreshCond(){
   $('#condBox').innerHTML=
     kv('日付',c.dateLabel+' '+fmtH(c.hour))+kv('時間帯',c.bandLabel)+kv('潮',c.tideName+(c.rising?'(上げ)':'(下げ)'))+kv('潮の速さ',c.flow01>.6?'速い':c.flow01>.3?'ふつう':'ゆるい')+
     kv('月齢',c.age.toFixed(1))+kv('水温',c.temp.toFixed(1)+'℃')+kv('天気',c.weather)+kv('風',c.windDir+' '+c.wind.toFixed(1)+'m/s')+
-    kv('水の色',c.clarity)+kv('季節',c.seasonLabel);
+    kv('水の色',c.clarity)+kv('季節',c.seasonLabel)+kv('データ',srcTxt(c,prepPt,store.settings));
   $('#forecast').innerHTML='<span class="lab">この日の期待度</span><span class="st" aria-label="5段階中'+f.stars+'">'+'★'.repeat(f.stars)+'<i>'+'★'.repeat(5-f.stars)+'</i></span>';
   $('#why').innerHTML=f.why.map(function(w){return '<span class="'+(w.ok?'ok':'ng')+'">'+(w.ok?'+ ':'− ')+w.t+'</span>'}).join('');
   tideSvg(c);
@@ -709,8 +825,8 @@ function refreshCond(){
 function tideSvg(c){
   var W=320,H=104,sx=function(h){return 10+(W-20)*h/24},sy=function(l){return 40-l*28};
   var base=new Date(c.date.getTime());base.setHours(0,0,0,0);
-  var d='',x;for(var i=0;i<=96;i++){var h=i/4,lv=tideAt(new Date(base.getTime()+i*900000)).level;d+=(i?' L':'M')+sx(h).toFixed(1)+' '+sy(lv).toFixed(1)}
-  var curL=tideAt(c.date).level;
+  var d='',x;for(var i=0;i<=96;i++){var h=i/4,lv=tideFor(new Date(base.getTime()+i*900000),c).level;d+=(i?' L':'M')+sx(h).toFixed(1)+' '+sy(lv).toFixed(1)}
+  var curL=tideFor(c.date,c).level;
   var s='<rect x="'+sx(0)+'" y="6" width="'+(sx(c.sr)-sx(0))+'" height="68" fill="currentColor" opacity=".08"/><rect x="'+sx(c.ss)+'" y="6" width="'+(sx(24)-sx(c.ss))+'" height="68" fill="currentColor" opacity=".08"/>';
   s+='<line x1="'+sx(0)+'" y1="'+sy(0)+'" x2="'+sx(24)+'" y2="'+sy(0)+'" stroke="currentColor" opacity=".25" stroke-dasharray="3 3"/>';
   s+='<path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="2"/>';
@@ -803,7 +919,9 @@ function newSquid(fade,spot){
   if(kind==='kou'){w=Math.round(150+Math.pow(Math.random(),1.5)*900);z=sb-.35}
   else if(kind==='gashira'){w=Math.round(80+Math.random()*230);z=sb-.3}
   else w=Math.round(sizeFor(G.cond.season));
-  return {id:++uid,sp:kind,x:x,z:z,hx:x,hz:z,spot:sp.id,w:w,state:'cruise',dir:Math.random()<.5?-1:1,tx:x,tz:z,speed:kind==='aori'?rnd(.25,.55):rnd(.12,.28),
+  var form=null;
+  if(kind==='aori'&&(sp.kind==='deep'||sp.kind==='rip')){var py=G.cond.season==='winter'?.45:G.cond.season==='spring'?.15:G.cond.season==='autumn'?.03:0;if(Math.random()<py){form='yari';w=Math.round(110+Math.pow(Math.random(),1.5)*520)}}
+  return {form:form,id:++uid,sp:kind,x:x,z:z,hx:x,hz:z,spot:sp.id,w:w,state:'cruise',dir:Math.random()<.5?-1:1,tx:x,tz:z,speed:kind==='aori'?rnd(.25,.55):rnd(.12,.28),
     wary:clamp(G.cond.wary*rnd(.6,1.2),0,1),curious:rnd(.75,1.2),cool:rnd(0,2),age:0,fade:fade?0:1,chaseT:0,hugT:0,hold:2,leaveT:0,reelT:0,twitch:0,ph:Math.random()*6.28,jetT:0,sx:0,hugKind:'tap'};
 }
 function colorFit(){var col=colorById(G.colorId);return clamp(col.fit[G.cond.light]*(1-(G.cfat[G.colorId]||0)),.08,1)}
@@ -1113,11 +1231,11 @@ function netMiss(){
   L.winC=rnd(.25,.75);L.t=0;updateLandUi();toast('タイミングが合わない… もう一度','warn',1400);
 }
 function landed(s){
-  var sp=SPECIES[s.sp]||SPECIES.aori;
+  var key=s.form||s.sp,sp=SPECIES[key]||SPECIES.aori;
   var pts=Math.max(1,Math.round(s.w/10*sp.mult));G.score+=pts;
   var egiTxt=G.egiSize.n.toFixed(1)+'号'+colorById(G.colorId).name;
-  G.catches.push({w:s.w,sp:s.sp,band:G.cond.bandLabel,egi:egiTxt,pts:pts});
-  var dx=store.dex[s.sp]||{n:0,max:0},rec=s.w>dx.max&&dx.n>0;dx.n++;dx.max=Math.max(dx.max,s.w);store.dex[s.sp]=dx;
+  G.catches.push({w:s.w,sp:key,band:G.cond.bandLabel,egi:egiTxt,pts:pts});
+  var dx=store.dex[key]||{n:0,max:0},rec=s.w>dx.max&&dx.n>0;dx.n++;dx.max=Math.max(dx.max,s.w);store.dex[key]=dx;
   G.cfat[G.colorId]=Math.max(0,(G.cfat[G.colorId]||0)-.2);
   noteCatch(s);
   G.squids=G.squids.filter(function(q){return q!==s});
@@ -1484,11 +1602,11 @@ function drawSquid(s,alpha,ts){
     ctx.restore();return;
   }
   var pulse=s.jetT>0?.8:1+.04*Math.sin(ts/230+s.ph);
-  var base=s.sp==='kou'?[196,170,128]:[225,232,236],flush=s.sp==='kou'?[120,86,60]:[205,120,112];
+  var base=s.sp==='kou'?[196,170,128]:s.form==='yari'?[222,196,186]:[225,232,236],flush=s.sp==='kou'?[120,86,60]:[205,120,112];
   var amt=s.state==='hug'||s.state==='hooked'?.85:s.state==='chase'?.55:s.state==='landing'?.9:0;
   if(s.state==='leave')amt=.15;
   var col=mixc(base,flush,amt);
-  var wid=s.sp==='kou'?.23:.15,len=s.sp==='kou'?.78:1;
+  var wid=s.sp==='kou'?.23:s.form==='yari'?.1:.15,len=s.sp==='kou'?.78:s.form==='yari'?1.3:1;
   ctx.scale(pulse,1/pulse);
   // ヒレ
   ctx.fillStyle=css(mixc(col,[255,255,255],.2),.75);
@@ -1536,7 +1654,7 @@ function render(ts){
     drawSquid(s,al,ts);
     if(G.easy){
       if(s.state==='hug'){ctx.fillStyle='#ffd34d';ctx.font='700 18px sans-serif';ctx.textAlign='center';ctx.fillText('!',X(s.x),ZZ(s.z)-22)}
-      if(s.sp!=='aori'&&s.state==='cruise'){ctx.fillStyle='rgba(255,255,255,.65)';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(SPECIES[s.sp].name,X(s.x),ZZ(s.z)-16)}
+      if((s.sp!=='aori'||s.form)&&s.state==='cruise'){ctx.fillStyle='rgba(255,255,255,.65)';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(SPECIES[s.form||s.sp].name,X(s.x),ZZ(s.z)-16)}
     }
   });
   drawLine(c,ts);
@@ -1805,7 +1923,7 @@ function renderFps(ts){
 var RK={db:null,uid:null,mine:null,docs:[],tab:'tot',denied:false,canWrite:null,queue:Promise.resolve(),pendingPt:null,synced:false,state:'init',err:null};
 var FB_URL='https://real-egi-default-rtdb.asia-southeast1.firebasedatabase.app';
 RK.mode=null;
-var PT_SHORT={maiko:'舞子',iwaya:'岩屋',nanko:'南港',kada:'加太'};
+var PT_SHORT={maiko:'舞子',iwaya:'岩屋',nanko:'南港',kada:'加太',yura:'由良',sumoto:'洲本',kojima:'小島',kishiwada:'岸和田',rinku:'りんくう',saika:'雑賀崎'};
 function sanitizeNick(s){return String(s||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,12)}
 function numOk(v){v=Number(v);return isFinite(v)?clamp(Math.round(v),0,99999):0}
 function myNick(){
@@ -2298,7 +2416,7 @@ function t3SquidGeos(){
   T3.sg=G2;return G2;
 }
 function t3MakeSquid(s){
-  var Gm=t3SquidGeos(),o={id:s.id,sp:s.sp,mats:[],lat:null,pz:null,arms:[]};
+  var Gm=t3SquidGeos(),o={id:s.id,sp:s.sp,yari:s.form==='yari',mats:[],lat:null,pz:null,arms:[]};
   var root=new THREE.Group(),yaw=new THREE.Group(),pit=new THREE.Group();root.add(yaw);yaw.add(pit);o.root=root;o.yaw=yaw;o.pit=pit;
   function M(c,op){var m=new THREE.MeshLambertMaterial({color:c,transparent:true,opacity:op||1});o.mats.push(m);return m}
   if(s.sp==='gashira'){
@@ -2322,7 +2440,7 @@ function t3MakeSquid(s){
   return o;
 }
 function t3SquidColor(s){
-  var base=s.sp==='kou'?[196,170,128]:[225,232,236],flush=s.sp==='kou'?[120,86,60]:[205,120,112];
+  var base=s.sp==='kou'?[196,170,128]:s.form==='yari'?[222,196,186]:[225,232,236],flush=s.sp==='kou'?[120,86,60]:[205,120,112];
   var amt=s.state==='hug'||s.state==='hooked'?.85:s.state==='chase'?.55:s.state==='landing'?.9:0;if(s.state==='leave')amt=.15;
   return {col:mixc(base,flush,amt),amt:amt};
 }
@@ -2349,8 +2467,8 @@ function t3UpdSquid(o,s,ts,dt,egiP,egiLat,k,alpha,top){
   o.mm.color.copy(col);o.fm.color.copy(col).lerp(new THREE.Color(1,1,1),.25);o.hm.color.copy(col).lerp(new THREE.Color(1,1,1),.1);o.am.color.copy(col).lerp(new THREE.Color(1,1,1),.1);
   var em=.18+.1*cc.amt;[o.mm,o.fm,o.hm,o.am].forEach(function(m){m.emissive=m.emissive||new THREE.Color();m.emissive.copy(col).multiplyScalar(em)});
   var pulse=s.jetT>0?.82:1+.05*Math.sin(ts/230+s.ph);
-  o.mantle.scale.set(1,pulse,pulse);
-  var fw=Math.sin(ts/130+s.ph*3);o.fin.scale.set(1,1,1+.18*fw);o.fin.position.y=.0;
+  var yk=o.yari?.62:1;o.mantle.scale.set(o.yari?1.3:1,pulse*yk,pulse*yk);
+  var fw=Math.sin(ts/130+s.ph*3);o.fin.scale.set(o.yari?1.3:1,1,(1+.18*fw)*(o.yari?.62:1));o.fin.position.y=.0;
   var ext=excited?1.45:1,len=.36;
   o.arms.forEach(function(a){
     var u=a.userData,wv=Math.sin(ts/200+u.ph*2+s.ph)*.16;
@@ -2763,7 +2881,7 @@ function t3Overlay(ts,c,uw,fpShow,lat){
     G.squids.forEach(function(s){
       var o=T3.sq[s.id];if(!o||!o.root.visible)return;var q=t3PL(o.root.position.x,o.root.position.y+.35,o.root.position.z);if(!q.ok)return;
       if(s.state==='hug'){ctx.fillStyle='#ffd34d';ctx.font='700 18px sans-serif';ctx.textAlign='center';ctx.fillText('!',q.x,q.y-6)}
-      if(s.sp!=='aori'&&s.state==='cruise'){ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(SPECIES[s.sp].name,q.x,q.y-4)}
+      if((s.sp!=='aori'||s.form)&&s.state==='cruise'){ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(SPECIES[s.form||s.sp].name,q.x,q.y-4)}
     });
   }
   // ジャイロ: 画面の外にある釣り場/エギの方向を矢印で示す
@@ -2875,7 +2993,20 @@ var T3LOOK={
   // 加太・堤防の先: 友ヶ島を望む。先端に灯台、漁船
   teibo:{rot:0,dens:.5,bx:140,tree:1.8,lampStep:40,boats:[[-50,-60,6,0xe9e2d2],[40,-90,6.5,0xd9c7a0]],brk:[{side:1,x:36,len:46,lh:0xff5a4a}]},
   // 加太・磯寄り: 岩だらけ。建物はほとんど無し
-  iso:{rot:.7,dens:.2,bx:200,tree:2.4,lampStep:60,boulders:[[-14,4,9],[-26,2,7],[18,3,8],[32,5,10],[-40,3,6],[44,2,6],[-16,-3,5],[22,-5,4]],boats:[[-90,-110,6,0xe9e2d2]]}
+  iso:{rot:.7,dens:.2,bx:200,tree:2.4,lampStep:60,boulders:[[-14,4,9],[-26,2,7],[18,3,8],[32,5,10],[-40,3,6],[44,2,6],[-16,-3,5],[22,-5,4]],boats:[[-90,-110,6,0xe9e2d2]]},
+  // v1.4: 新しい立ち位置
+  yr_minato:{rot:.2,dens:.4,bx:100,tree:2,lampStep:40,boats:[[18,-14,6,0xe9e2d2],[-30,-30,6.5,0xd9c7a0],[44,-50,5.5,0xc9d5da]],brk:[{side:-1,x:-36,len:56,lh:0xff5a4a}],tetra:[[34,-12,5]]},
+  yr_ishi:{rot:-.5,dens:.15,bx:-180,tree:2.6,lampStep:70,boulders:[[-12,3,8],[-24,2,6],[16,4,9],[30,3,7],[-36,3,6],[40,2,6]],boats:[[100,-140,8,0xd5d9dc]]},
+  sm_soto:{rot:.4,dens:.8,bx:50,tree:1.2,lampStep:24,brk:[{side:1,x:40,len:56,lh:0x4ad07a}],tetra:[[-30,-10,5],[-24,-22,4]],ships:[[-140,-240,80,0x4a5560]],boats:[[-60,-70,7,0xe8e4d8]]},
+  sm_naka:{rot:0,dens:1,bx:0,lampStep:14,tree:.8,boats:[[18,-12,6.5,0xe8e4d8],[-24,-18,7,0xd9c7a0],[34,-30,5.5,0xe9e2d2],[-38,-40,6,0xc9d5da]],brk:[{side:-1,x:-44,len:56,lh:0xff5a4a},{side:1,x:48,len:48,lh:0x4ad07a}]},
+  kj_park:{rot:.15,dens:.6,bx:-40,lampStep:18,tree:1.5,boats:[[40,-70,6,0xe9e2d2]],brk:[{side:1,x:42,len:44,lh:0xff5a4a}],tetra:[[-32,-12,5]]},
+  kj_soto:{rot:-.7,dens:.3,bx:-120,tree:1.8,lampStep:50,tetra:[[20,-6,7],[28,-18,6],[24,-30,5]],ships:[[150,-250,90,0x3f4a54]],boats:[[-90,-100,6.5,0xd9c7a0]]},
+  ks_kyuko:{rot:.1,dens:1.2,bx:20,lampStep:14,tree:.5,boats:[[16,-12,6.5,0xe8e4d8],[-20,-16,7,0xd9c7a0],[30,-28,6,0xe9e2d2]],brk:[{side:-1,x:-40,len:52,lh:0xff5a4a}],cranes:[[-120,-80,26]]},
+  ks_bohatei:{rot:-.4,dens:.9,bx:-70,lampStep:26,tree:.5,tetra:[[24,-8,7],[32,-20,6]],ships:[[100,-190,100,0x34404a]],boats:[[-60,-60,6,0xe9e2d2]]},
+  rk_gogan:{rot:.3,dens:1.1,bx:30,lampStep:14,tree:.4,cranes:[[110,-70,30]],ships:[[-80,-200,110,0x2f3a44]],boats:[[50,-45,7,0xe8e4d8]]},
+  rk_soto:{rot:-.5,dens:.8,bx:-60,lampStep:30,tree:.4,tetra:[[-24,-8,6],[-30,-20,5]],ships:[[120,-210,100,0x34404a],[-140,-260,70,0x4a5560]]},
+  sk_iso:{rot:.5,dens:.15,bx:180,tree:2.6,lampStep:70,boulders:[[-16,4,9],[-28,2,7],[14,3,8],[30,5,10],[-42,3,6],[42,2,6],[-12,-3,5]],boats:[[-100,-120,6,0xe9e2d2]]},
+  sk_ko:{rot:0,dens:.55,bx:90,tree:2,lampStep:30,boats:[[18,-14,6,0xe9e2d2],[-26,-24,6.5,0xd9c7a0],[40,-40,5.5,0xc9d5da],[-48,-56,7,0xe8e4d8]],brk:[{side:1,x:38,len:48,lh:0xff5a4a}]}
 };
 function t3LookOf(sid){return Object.assign({},T3LOOK._,T3LOOK[sid]||{})}
 function t3BuildLook(S,LK){
@@ -3089,7 +3220,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='1.3';
+var VER='1.4';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -3105,7 +3236,7 @@ var HELP=[
   {t:'狙って投げる',b:['画面の海面をタップすると、狙う位置が決まります。遠いほど画面の上のほうです。','下のキャストボタンで投げます。','「3D自分目線」でジャイロをONにすると、スマホを向けた方向と距離へ投げられます(画面中央のリングが着水点)。']},
   {t:'沈めて、シャクる',b:['着水したらカウントを見て、狙いの深さまで沈めます。','シャクると、タップ1回、続けて2回(ツーピッチ)、押し続け(ロング)の3種類が使えます。','イカが抱くのは、たいていシャクったあとのフォール中です。']},
   {t:'アタリ・ヒット・タモ入れ',b:['アタリが出たら、すぐシャクって合わせます。ラインの目印が止まって震えたらアタリです。','足元までイカがついてきたら、巻くのを止めてエギを落とすと抱きます。','ヒットしたら巻きます。イカが走る時は手を止め、張りすぎるとライン切れ、緩めすぎるとバレます。','寄せたらタモ入れ。緑の位置でタップします。']},
-  {t:'条件を読む',b:['時間帯・潮・水の濁り・天気で、イカの動きが変わります。準備画面のヒントを見てください。','同じ色や同じ動きを続けるとイカが慣れます。色・号数・シャクリ方を変えるのがコツです。','立ち位置でも景色と潮の当たり方が変わります。「景色を3Dで見て選ぶ」で見比べられます。']},
+  {t:'条件を読む',b:['ネットにつながっていると、今日・あしたは実際の天気・風・波・水温・潮の高さ(気象データ)を使います。つながらない時は簡易計算になります。','時間帯・潮・水の濁り・天気で、イカの動きが変わります。準備画面のヒントを見てください。','同じ色や同じ動きを続けるとイカが慣れます。色・号数・シャクリ方を変えるのがコツです。','立ち位置でも景色と潮の当たり方が変わります。「景色を3Dで見て選ぶ」で見比べられます。']},
   {t:'視点とジャイロ',b:['画面の右上のボタンで、横から・自分目線(2D)・3D自分目線・3D水中カメラを切り替えられます。','3D自分目線の「ジャイロ」をONにすると、スマホを動かして360°見渡せます。向きがずれたら「正面に合わせる」を押します。','iPhoneは最初に許可の確認が出ます。3Dはネット接続が必要で、重いときは2Dにしてください。']},
   {t:'記録とランキング',b:['釣った記録はこの端末に残り、「記録と図鑑」で見られます。称号を集めてみましょう。','ランキングはニックネームで参加できます(登録不要)。自己申告のスコアなので、仲間内の遊び向けです。','困ったときは、メニュー下の「不具合・ご意見を送る」から伝えられます。']}
 ];
@@ -3129,6 +3260,7 @@ function reportText(){
     '画面: '+screen.width+'x'+screen.height+' / '+(navigator.userAgent||'').replace(/\s+/g,' ').slice(0,110),
     '3D: '+(typeof THREE==='undefined'?'読込失敗':(T3&&T3.ok?'OK':'未使用'))+' / ジャイロ: '+(typeof GY!=='undefined'&&GY.on&&GY.ready?'ON':'OFF')+(g?(' / 視点: '+g.view):''),
     g?('場所: '+g.pt.name+' / '+g.st.name+' / '+g.cond.bandLabel):'場所: (釣り中ではない)',
+    'データ: '+(g&&g.cond.src==='live'?'実データ':'簡易計算')+' / 取得: '+LIVE.state(POINTS[0]),
     'エラー: '+(ERRS.length?ERRS.join(' | '):'なし')];
   return info.join('\n');
 }
@@ -3187,6 +3319,8 @@ var BADGES=[
   {id:'dawn',name:'朝マズメ使い',desc:'朝マズメに3杯釣る',ok:function(s){return (s.band.dawn||0)>=3}},
   {id:'dusk',name:'夕マズメ使い',desc:'夕マズメに3杯釣る',ok:function(s){return (s.band.dusk||0)>=3}},
   {id:'night',name:'夜の住人',desc:'夜に3杯釣る',ok:function(s){return (s.band.night||0)>=3}},
+  {id:'yari',name:'ヤリイカ確認',desc:'ヤリイカを釣る',ok:function(){return !!store.dex.yari}},
+  {id:'pt5',name:'5か所で釣る',desc:'5つのポイントで釣る',ok:function(s){return Object.keys(s.pt).filter(function(k){return s.pt[k]>0}).length>=5}},
   {id:'g10',name:'釣行10回',desc:'10回釣行する',ok:function(s){return (store.games||0)>=10}}
 ];
 function badgeCheck(){
@@ -3201,7 +3335,7 @@ function noteCatch(sq){
   s.color[G.colorId]=(s.color[G.colorId]||0)+1;
   s.pt[G.pt.id]=(s.pt[G.pt.id]||0)+1;
   s.band[c.band]=(s.band[c.band]||0)+1;
-  var d=store.dex[sq.sp];if(d&&!d.first)d.first={t:Date.now(),pt:G.pt.name.replace(/^.*?・/,''),egi:G.egiSize.n.toFixed(1)+'号'+colorById(G.colorId).name,w:sq.w};
+  var d=store.dex[sq.form||sq.sp];if(d&&!d.first)d.first={t:Date.now(),pt:G.pt.name.replace(/^.*?・/,''),egi:G.egiSize.n.toFixed(1)+'号'+colorById(G.colorId).name,w:sq.w};
   var got=badgeCheck();
   if(got.length)setTimeout(function(){toast('称号を獲得: '+got.join('、'),'good',3200)},1900);
 }
@@ -3215,7 +3349,8 @@ function noteGame(){
 var SP_INFO={
   aori:'潮の動く朝夕のマズメに。ブレイクや藻場の際を、フォールで見せて抱かせる。',
   kou:'砂地の底に張りつく。エギを底近くでゆっくり動かすと抱く。',
-  gashira:'岩・護岸・藻場の底に潜む外道。底を引きすぎると根掛かりに注意。'
+  gashira:'岩・護岸・藻場の底に潜む外道。底を引きすぎると根掛かりに注意。',
+  yari:'冬〜春の深場や潮目に。細長い体のイカで、アオリよりやや小さめ。深めを丁寧に探ろう。'
 };
 function fmtD(t){var d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()}
 var logAll=false;
@@ -3319,7 +3454,7 @@ $('#rMenu').addEventListener('click',function(){show('menu');renderRecords()});
 $('#rAgain').addEventListener('click',function(){startGame(G.pt,G.st,store.settings)});
 
 /* ---------- 起動 ---------- */
-renderToday();renderPoints();renderRecords();renderRank();show('menu');setTimeout(rankInit,0);
+renderToday();renderPoints();renderRecords();renderRank();show('menu');LIVE.ensure(POINTS[0]).then(renderToday);setTimeout(rankInit,0);
 if(!store.settings.seenHelp)setTimeout(helpOpen,500);
 rafId=requestAnimationFrame(loop);
 if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
