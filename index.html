@@ -171,6 +171,33 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .controls[data-mode="land"] #bNet{grid-column:1/-1}
 .sheet{position:absolute;inset:0;z-index:5;background:rgba(3,10,15,.6);display:flex;align-items:flex-end}
 .sheet .inner{width:100%;max-width:560px;margin-inline:auto;background:var(--paper);color:var(--ink);border-radius:16px 16px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:85%;overflow-y:auto}
+.ov{position:fixed;inset:0;z-index:50;background:rgba(3,10,15,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+.ov[hidden]{display:none}
+.ovbox{width:100%;max-width:480px;max-height:92vh;overflow:auto;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px}
+.ovhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ovhead .btn.ghost{width:auto;padding-inline:8px}
+.ovbody h3{margin:0 0 6px;font-family:var(--font-display);font-weight:400;font-size:22px}
+.ovbody p{margin:0 0 8px;font-size:14px}
+.ovdots{display:flex;gap:6px;justify-content:center}
+.ovdots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.ovdots i.on{background:var(--accent)}
+.ovfoot{display:flex;gap:10px}
+.ovfoot .btn{flex:1}
+.btn:disabled{opacity:.4;cursor:default}
+textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;box-sizing:border-box;resize:vertical;margin-top:8px}
+.nbsum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.nbsum div{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 2px}
+.nbsum b{display:block;font-family:var(--font-display);font-weight:400;font-size:20px;font-variant-numeric:tabular-nums}
+.nbsum small{font-size:10px;color:var(--ink-2)}
+.bdgs{display:flex;flex-wrap:wrap;gap:6px}
+.bdg{font-size:12px;padding:3px 10px;border-radius:99px;border:1px dashed var(--line);color:var(--ink-2)}
+.bdg.on{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700}
+.dexc{border-bottom:1px dotted var(--line);padding-bottom:6px}
+.dexc .row{grid-template-columns:1fr auto auto}
+.cbar{display:grid;grid-template-columns:18px 78px 1fr 28px;gap:8px;align-items:center;font-size:13px;padding:2px 0}
+.cbar .sw{width:16px;height:16px;border-radius:50%}
+.cbar i{display:block;height:8px;border-radius:4px;background:var(--accent);min-width:2px}
+.cbar b{text-align:right;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion: reduce){#toast{transition:none}}
 </style>
 
@@ -179,22 +206,11 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 1.2</p>
+        <p class="eyebrow">テスト版 1.3</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
-      <details class="panel" id="howto">
-        <summary>遊び方</summary>
-        <ul class="list" style="margin-top:10px;display:grid;gap:8px;list-style:disc;padding-left:1.1em">
-          <li style="display:list-item">水面(自分目線では海面の奥行き)をタップして狙う位置を決め、キャスト。着水したらカウントを見て、狙いの深さまで沈めます。</li>
-          <li style="display:list-item">シャクると、タップで1回、続けて2回でツーピッチ、押し続けるとロングシャクリです。シャクったあとのフォールでイカが抱きます。</li>
-          <li style="display:list-item">アタリが出たら、すぐシャクって合わせます。リアル表示では、ラインの目印が止まって震えるのがアタリです。</li>
-          <li style="display:list-item">足元までイカがついてきたら、巻くのを止めてエギを落とすと抱きます。</li>
-          <li style="display:list-item">ヒットしたら巻きます。イカが走る時は巻くのを止め、張りすぎるとライン切れ、緩めすぎるとバレです。</li>
-          <li style="display:list-item">寄せたら、大きなイカはタモ入れ。緑の位置でタップします。</li>
-          <li style="display:list-item">同じ色や同じリズムを続けるとイカが慣れます。色・号数・シャクリを変えましょう。</li>
-        </ul>
-      </details>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="helpBtn" type="button">遊び方を見る</button><button class="btn" id="repBtn" type="button">不具合・ご意見を送る</button></div>
       <h2 class="sec">今日の海</h2>
       <div class="panel today" id="today"></div>
       <h2 class="sec">ポイントを選ぶ</h2>
@@ -344,6 +360,7 @@ input.txt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     </div>
   </section>
 
+<div class="ov" id="ov" hidden></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -413,8 +430,8 @@ var POINTS=[
 var BAND_LABEL={dawn:'朝マズメ',day:'日中',dusk:'夕マズメ',night:'夜'};
 var DEFAULTS={dateMode:'today',timeMode:'now',rod:8.3,pe:0.6,lead:1.75,egi:3.0,color:'pink',easy:true,sound:true,view:'side',stands:{}};
 var LS_KEY='real-egi-v2';
-var store={settings:Object.assign({},DEFAULTS),best:{},log:[],dex:{}};
-try{var raw=localStorage.getItem(LS_KEY)||localStorage.getItem('real-egi-v1');if(raw){var o=JSON.parse(raw);store.settings=Object.assign({},DEFAULTS,o.settings||{});if(!store.settings.stands)store.settings.stands={};store.best=o.best||{};store.log=o.log||[];store.dex=o.dex||{}}}catch(e){}
+var store={settings:Object.assign({},DEFAULTS),best:{},log:[],dex:{},stat:null,badges:{},games:0};
+try{var raw=localStorage.getItem(LS_KEY)||localStorage.getItem('real-egi-v1');if(raw){var o=JSON.parse(raw);store.settings=Object.assign({},DEFAULTS,o.settings||{});if(!store.settings.stands)store.settings.stands={};store.best=o.best||{};store.log=o.log||[];store.dex=o.dex||{};store.stat=o.stat||null;store.badges=o.badges||{};store.games=o.games||0}}catch(e){}
 function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(store))}catch(e){}}
 function ptById(id){return POINTS.filter(function(p){return p.id===id})[0]}
 function standOf(pt,id){return pt.stands.filter(function(s){return s.id===id})[0]||pt.stands[0]}
@@ -531,19 +548,23 @@ var AU={ctx:null,master:null,nb:null,amb:null,tickT:0,
   },
   ok:function(){return this.ctx&&store.settings.sound},
   resume:function(){try{if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()}catch(e){}},
-  noise:function(dur,f0,f1,q,gain,type){
+  out:function(n,pan){
+    try{if(pan&&this.ctx.createStereoPanner){var p=this.ctx.createStereoPanner();p.pan.value=clamp(pan,-1,1);n.connect(p);p.connect(this.master)}else n.connect(this.master)}catch(e){n.connect(this.master)}
+  },
+  noise:function(dur,f0,f1,q,gain,type,pan){
     if(!this.ok())return;
     try{var c=this.ctx,s=c.createBufferSource();s.buffer=this.nb;var f=c.createBiquadFilter();f.type=type||'lowpass';f.Q.value=q||1;
       var t=c.currentTime;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(Math.max(40,f1),t+dur);
       var g=c.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+.02);g.gain.exponentialRampToValueAtTime(.0008,t+dur);
-      s.connect(f);f.connect(g);g.connect(this.master);s.start(t,Math.random());s.stop(t+dur+.05)}catch(e){}
+      s.connect(f);f.connect(g);this.out(g,pan);s.start(t,Math.random());s.stop(t+dur+.05)}catch(e){}
   },
-  tone:function(f0,f1,dur,gain,type){
+  tone:function(f0,f1,dur,gain,type,pan){
     if(!this.ok())return;
     try{var c=this.ctx,o=c.createOscillator();o.type=type||'sine';var t=c.currentTime;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t+dur);
-      var g=c.createGain();g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(.0008,t+dur);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+dur+.02)}catch(e){}
+      var g=c.createGain();g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(.0008,t+dur);o.connect(g);this.out(g,pan);o.start(t);o.stop(t+dur+.02)}catch(e){}
   },
-  splash:function(big){this.noise(big?.6:.35,3200,380,.8,big?.5:.3,'lowpass')},
+  splash:function(big,pan,vol){this.noise(big?.6:.35,3200,380,.8,(big?.5:.3)*(vol==null?1:vol),'lowpass',pan)},
+  reelClick:function(){this.tone(2300,1800,.012,.022,'square')},
   tick:function(){this.tone(1900,1500,.018,.05,'square')},
   bite:function(){this.tone(240,130,.12,.25,'sine')},
   jet:function(){this.noise(.4,700,2400,3,.18,'bandpass')},
@@ -552,11 +573,50 @@ var AU={ctx:null,master:null,nb:null,amb:null,tickT:0,
   swish:function(){this.noise(.22,1200,3500,1.2,.18,'bandpass')},
   win:function(){var s=this;[660,880,1100].forEach(function(f,i){setTimeout(function(){s.tone(f,f*1.01,.22,.18,'sine')},i*110)})},
   ambient:function(on,rain){
-    if(this.amb){try{this.amb.src.stop()}catch(e){}this.amb=null}
+    var a=this.amb;
+    if(a){try{a.srcs.forEach(function(x){x.stop()})}catch(e){}clearTimeout(a.tm);this.amb=null}
     if(!on||!this.ctx)return;
-    try{var c=this.ctx,s=c.createBufferSource();s.buffer=this.nb;s.loop=true;var f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=rain?1600:520;
-      var g=c.createGain();g.gain.value=rain?.06:.045;var lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=.13;lg.gain.value=.025;lfo.connect(lg);lg.connect(g.gain);lfo.start();
-      s.connect(f);f.connect(g);g.connect(this.master);s.start();this.amb={src:s,lfo:lfo}}catch(e){}
+    try{
+      var c=this.ctx,self=this,gm=(typeof G!=='undefined'&&G)?G:null,cd=gm&&gm.cond,sc=gm&&gm.pt?gm.pt.scenery:'',srcs=[];
+      function layer(type,freq,q,gain,lfoF,lfoD){
+        var s=c.createBufferSource();s.buffer=self.nb;s.loop=true;var f=c.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;
+        var g=c.createGain();g.gain.value=gain;
+        if(lfoF){var lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=lfoF;lg.gain.value=lfoD;lfo.connect(lg);lg.connect(g.gain);lfo.start();srcs.push(lfo)}
+        s.connect(f);f.connect(g);g.connect(self.master);s.start(0,Math.random());srcs.push(s);return g;
+      }
+      var wind=cd?cd.wind:3,townLv=sc==='city'?1:sc==='bridge'?.55:sc==='hills'?.4:.3;
+      var seaB=rain?.06:(.04+Math.min(.03,(cd?cd.wave:.4)*.04));
+      var seaG=layer('lowpass',rain?1600:520,1,seaB,.13,.025);
+      var windB=Math.min(.05,.006+wind*.0045+(rain?.012:0));
+      var windG=layer('bandpass',700,.6,windB,.07,windB*.5);
+      var townB=.02*townLv;
+      var townG=layer('lowpass',210,.8,townB,.05,townB*.3);
+      var amb={srcs:srcs,seaG:seaG,windG:windG,townG:townG,seaB:seaB,windB:windB,townB:townB,tm:0};
+      this.amb=amb;
+      var night=cd&&cd.band==='night',day=cd&&cd.band==='day'&&!rain;
+      (function critter(){
+        if(self.amb!==amb)return;
+        amb.tm=setTimeout(function(){
+          if(self.amb!==amb)return;
+          var yaw=self.yaw||0,ang=Math.random()*6.28-3.14,rel=ang-yaw,pan=-Math.sin(rel),vol=.3+.7*(.5+.5*Math.cos(rel));
+          if(self.ok()){
+            if(day&&Math.random()<.7){var f=1300+Math.random()*500;self.tone(f,f*.62,.22,.035*vol,'triangle',pan);setTimeout(function(){self.tone(f*1.05,f*.6,.2,.03*vol,'triangle',pan)},230)}
+            else if(night&&Math.random()<.8){for(var k=0;k<3;k++)(function(k){setTimeout(function(){self.tone(4300,4300,.05,.012*vol,'sine',pan)},k*90)})(k)}
+          }
+          critter();
+        },3500+Math.random()*5500);
+      })();
+    }catch(e){}
+  },
+  yaw:0,pitch:0,
+  listen:function(yaw,fy){
+    this.yaw=yaw;var a=this.amb;if(!a||!this.ctx)return;
+    var cs=Math.cos(yaw),face=.5+.5*cs,down=clamp(-fy,0,1),t=this.ctx.currentTime;
+    try{
+      a.seaG.gain.setTargetAtTime(a.seaB*(.55+.45*face)*(1+.5*down),t,.12);
+      a.windG.gain.setTargetAtTime(a.windB*(.7+.5*(1-face)),t,.12);
+      a.townG.gain.setTargetAtTime(a.townB*(.25+2.2*(1-face)),t,.12);
+    }catch(e){}
   }
 };
 
@@ -597,13 +657,6 @@ function renderPoints(){
     el.appendChild(a);
   });
   el.onclick=function(e){var l=e.target.closest('button[data-look]');if(l){lookStart(lookIndexOf(l.getAttribute('data-look')));return}var b=e.target.closest('button[data-pt]');if(b)openPrep(b.getAttribute('data-pt'))};
-}
-function renderRecords(){
-  var el=$('#records'),rows='';
-  POINTS.forEach(function(pt){var b=store.best[pt.id];rows+='<div class="row"><span>'+pt.name+'</span><span>'+(b?('最高 '+b.score+'点'):'未挑戦')+'</span><span>'+(b?('最大 '+b.maxW+'g'):'')+'</span></div>'});
-  var dex='<p class="lab" style="margin:12px 0 4px">図鑑</p><div class="rec">'+Object.keys(SPECIES).map(function(k){var d=store.dex[k];return '<div class="row"><span>'+SPECIES[k].name+'</span><span>'+(d?(d.n+'匹'):'未確認')+'</span><span>'+(d?('最大 '+d.max+'g'):'')+'</span></div>'}).join('')+'</div>';
-  var log='';if(store.log.length){log='<p class="lab" style="margin:12px 0 4px">最近の釣果(この端末のみ)</p>'+store.log.slice(0,6).map(function(l){return '<div class="row"><span>'+l.pt+' '+l.band+'</span><span>'+l.w+'g</span><span>'+(l.sp&&SPECIES[l.sp]&&l.sp!=='aori'?SPECIES[l.sp].name:l.egi)+'</span></div>'}).join('')}
-  el.innerHTML='<div class="rec">'+rows+'</div>'+dex+log;
 }
 function chipGroup(el,opts,getVal,setVal){
   el.innerHTML='';
@@ -844,6 +897,7 @@ function update(dt){
   if(!G||G.over)return;
   G.timeLeft-=dt;if(G.timeLeft<=0){G.timeLeft=0;endGame();return}
   G.t+=dt;if(G.lockT>0)G.lockT-=dt;
+  if(input.reel&&(G.phase==='water'||G.phase==='fight')){G.rcT=(G.rcT||0)-dt;if(G.rcT<=0){G.rcT=.075;AU.reelClick()}}
   dynUpdate(dt);
   G.spawnT-=dt;if(G.spawnT<=0){G.spawnT=rnd(5,9);
     var aoriN=G.squids.filter(function(q){return q.sp==='aori'}).length;
@@ -859,7 +913,7 @@ function update(dt){
 function updateFly(dt){
   var E=G.egi;E.flyT+=dt;
   if(E.flyT>=E.flyDur){E.x=E.landX;E.z=0;E.mode='fall';E.t=0;G.phase='water';
-    fx('rip',E.x,0);fx('drop',E.x,0,{n:6});AU.splash();
+    fx('rip',E.x,0);fx('drop',E.x,0,{n:6});var sp3=auSplashArgs();AU.splash(false,sp3[0],sp3[1]);
     toast(E.x.toFixed(0)+'m先に着水。水深は約'+seabed(E.x).toFixed(0)+'m');}
 }
 function inSpot(kinds,x){for(var i=0;i<G.spots.length;i++){var s=G.spots[i];if(kinds.indexOf(s.kind)>=0&&x>=s.x0&&x<=s.x1)return s}return null}
@@ -1065,6 +1119,7 @@ function landed(s){
   G.catches.push({w:s.w,sp:s.sp,band:G.cond.bandLabel,egi:egiTxt,pts:pts});
   var dx=store.dex[s.sp]||{n:0,max:0},rec=s.w>dx.max&&dx.n>0;dx.n++;dx.max=Math.max(dx.max,s.w);store.dex[s.sp]=dx;
   G.cfat[G.colorId]=Math.max(0,(G.cfat[G.colorId]||0)-.2);
+  noteCatch(s);
   G.squids=G.squids.filter(function(q){return q!==s});
   G.squids.forEach(function(q){q.wary=Math.min(1,q.wary+.04*G.pt.press)});
   var card=$('#card');card.hidden=false;
@@ -1078,7 +1133,7 @@ function endGame(){
   var tot=G.score,maxW=G.catches.reduce(function(m,c){return Math.max(m,c.sp==='aori'?c.w:0)},0);
   var b=store.best[G.pt.id]||{score:0,maxW:0},newBest=tot>b.score;
   store.best[G.pt.id]={score:Math.max(b.score,tot),maxW:Math.max(b.maxW,maxW)};
-  G.catches.slice().reverse().forEach(function(c){store.log.unshift({pt:G.pt.name.replace(/^.*?・/,'')+'('+G.st.name.replace(/^.*?・/,'')+')',band:c.band,w:c.w,egi:c.egi,sp:c.sp})});store.log=store.log.slice(0,20);save();
+  G.catches.slice().reverse().forEach(function(c){store.log.unshift({t:Date.now(),pt:G.pt.name.replace(/^.*?・/,'')+'('+G.st.name.replace(/^.*?・/,'')+')',band:c.band,w:c.w,egi:c.egi,sp:c.sp})});store.log=store.log.slice(0,60);noteGame();save();
   var c=G.cond,st=G.stats;
   $('#rPt').textContent=G.pt.name+' / '+G.st.name.replace(/^.*?・/,'')+' / '+c.dateLabel+' / '+c.tideName;
   $('#rScore').textContent=tot+' 点';
@@ -2036,14 +2091,15 @@ function t3BuildWater(W){
 }
 
 /* ---- 遠景(橋・山・街・島) ---- */
-function t3BuildScenery(W,sc,far){
+function t3BuildScenery(W,sc,far,sid){
   var S={mats:[],lights:[],blink:[]};
   var sil=new THREE.MeshBasicMaterial({color:0x101820,fog:false}),sl=new THREE.LineBasicMaterial({color:0x101820,fog:false});
   S.sil=sil;S.sl=sl;
   var g=new THREE.Group();W.add(g);S.g=g;
-  function box(w,h,d,x,y,z){var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),sil);m.position.set(x,y+h/2,z);g.add(m);return m}
-  function dome(rx,ry,rz,x,z){var m=new THREE.Mesh(new THREE.SphereGeometry(1,18,9,0,6.2832,0,1.5708),sil);m.scale.set(rx,ry,rz);m.position.set(x,-1,z);g.add(m)}
-  function line(pts){var geo=new THREE.BufferGeometry().setFromPoints(pts);g.add(new THREE.Line(geo,sl))}
+  var LK=t3LookOf(sid),gF=new THREE.Group();gF.rotation.y=LK.rot;g.add(gF);
+  function box(w,h,d,x,y,z){var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),sil);m.position.set(x,y+h/2,z);gF.add(m);return m}
+  function dome(rx,ry,rz,x,z){var m=new THREE.Mesh(new THREE.SphereGeometry(1,18,9,0,6.2832,0,1.5708),sil);m.scale.set(rx,ry,rz);m.position.set(x,-1,z);gF.add(m)}
+  function line(pts){var geo=new THREE.BufferGeometry().setFromPoints(pts);gF.add(new THREE.Line(geo,sl))}
   var lp=[];
   if(sc==='bridge'){
     var zz=far?-300:-170,s=far?1.25:1,dy=17*s;
@@ -2069,7 +2125,7 @@ function t3BuildScenery(W,sc,far){
       dd.position.set(x,0,z);dd.scale.set(w,h,d);dd.rotation.set(0,0,0);dd.updateMatrix();im.setMatrixAt(b,dd.matrix);
       var nw=Math.round(h/5);for(var k3=0;k3<nw;k3++){if(hsh(b*13+k3)>.35)lp.push([x+(hsh(b*7+k3)-.5)*w*.8,2+k3*4.6+hsh(b+k3)*2,z+d/2+.1,.8])}
     }
-    im.frustumCulled=false;g.add(im);
+    im.frustumCulled=false;gF.add(im);
     box(1.4,64,1.4,70,0,-190);box(26,1.4,1.4,82,60,-190);box(1.4,18,1.4,94,44,-190);S.blink.push([70,66,-190]);
   }else if(sc==='islands'){
     dome(60,12,30,-70,-150);dome(100,26,50,80,-210);dome(40,10,22,160,-170);dome(150,18,40,-190,-250);dome(30,8,20,20,-110);
@@ -2080,14 +2136,14 @@ function t3BuildScenery(W,sc,far){
     var pos=new Float32Array(lp.length*3);lp.forEach(function(q,i){pos[i*3]=q[0];pos[i*3+1]=q[1];pos[i*3+2]=q[2]});
     var geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
     S.lights=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffe2a0,size:2.6,sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false,fog:false,blending:THREE.AdditiveBlending}));
-    S.lights.frustumCulled=false;g.add(S.lights);
+    S.lights.frustumCulled=false;gF.add(S.lights);
   }else S.lights=null;
   if(S.blink.length){
     var bp=new Float32Array(S.blink.length*3);S.blink.forEach(function(q,i){bp[i*3]=q[0];bp[i*3+1]=q[1];bp[i*3+2]=q[2]});
     var bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.BufferAttribute(bp,3));
-    S.bl=new THREE.Points(bg,new THREE.PointsMaterial({color:0xff4a40,size:4,sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false,fog:false}));S.bl.frustumCulled=false;g.add(S.bl);
+    S.bl=new THREE.Points(bg,new THREE.PointsMaterial({color:0xff4a40,size:4,sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false,fog:false}));S.bl.frustumCulled=false;gF.add(S.bl);
   }
-  t3BuildSurround(S,sc,far);
+  t3BuildSurround(S,sc,far,LK);
   return S;
 }
 function t3UpdScenery(S,c,ts){
@@ -2097,6 +2153,7 @@ function t3UpdScenery(S,c,ts){
   if(S.bl)S.bl.material.opacity=litN*(.4+.6*(Math.sin(ts/420)>0?1:0));
   if(S.bldMat)S.bldMat.emissiveIntensity=litN*.95;
   if(S.lampGlow)S.lampGlow.material.opacity=litN*.95;
+  t3UpdLook(S,ts,litN);
 }
 
 /* ---- 海底・岩・藻 ---- */
@@ -2453,7 +2510,7 @@ function t3Build(){
   }
   var W=new THREE.Group();T3.world=W;T3.sc.add(W);T3.sg=null;T3.fxFree={};T3.fxLive=[];T3.sq={};T3.puff=null;
   var c=G.cond;
-  T3.sky=t3BuildSky(W,c);T3.water=t3BuildWater(W);T3.scn=t3BuildScenery(W,G.pt.scenery,G.st.far);
+  T3.sky=t3BuildSky(W,c);T3.water=t3BuildWater(W);T3.scn=t3BuildScenery(W,G.pt.scenery,G.st.far,G.st.id);
   var LW=new THREE.Group(),LN=new THREE.Group();W.add(LW);LW.add(LN);T3.lw=LW;T3.lane=LN;LW.position.set(0,0,T3Z0);LN.position.set(0,0,-T3Z0);T3.psi=0;T3.gb=0;T3.cq=T3.cq||new THREE.Quaternion();
   T3.sea=t3BuildSeabed(LN,G.spots);T3.str=t3BuildStructs(LN,G.st,G.spots);
   T3.egi=t3BuildEgi();LN.add(T3.egi.g);T3.egiCol=null;
@@ -2557,6 +2614,7 @@ function render3D(ts){
   if(G.phase==='ready'){var psiT=(gyActive()&&!G.look)?gyYaw():0;T3.psi+=(psiT-T3.psi)*Math.min(1,dt*9)}
   T3.lw.rotation.y=T3.psi;T3.lw.updateMatrixWorld(true);
   var rig=t3Rig(ts,dt,lat),cp=T3.cam.position,cpL=T3.lane.worldToLocal(cp.clone());
+  t3Listen();
   var uw=cp.y<0.15;
   if(T3.gyroOn&&G.phase==='ready'&&!G.look){G.aim+=(t3AimRay()-G.aim)*Math.min(1,dt*12)}
   t3UpdSky(T3.sky,c,ts,cp);
@@ -2731,7 +2789,7 @@ function applyView(v){
 }
 
 /* ---- 周囲の景色(岸壁・陸側・左右の海岸) : ジャイロで見回した時用 ---- */
-function t3BuildSurround(S,sc,far){
+function t3BuildSurround(S,sc,far,LK){LK=LK||t3LookOf('');
   var g=S.g,sil=S.sil,QZ=4.2,QT=2.9,mats=[];
   function M(c){var m=new THREE.MeshLambertMaterial({color:c});mats.push(m);return m}
   var conc=M(0x959b9e),curb=M(0xb9bec1),grd=M(0x565d56),bank=M(0x66706a);
@@ -2756,7 +2814,7 @@ function t3BuildSurround(S,sc,far){
          hills:{nb:110,zr:[58,135],w:[8,24],h:[6,12],d:[10,18],tr:48,pal:[0x9aa3a6,0xb3b9b8,0xc7c0b0,0x8a949a,0xa6998a]},
          city:{nb:190,zr:[70,240],w:[8,19],h:[10,58],d:[10,18],tr:12,pal:[0x8f979c,0xa3aaae,0x7d868c,0xb5babd,0x949ba0]},
          islands:{nb:60,zr:[55,130],w:[5,10],h:[4,7],d:[7,12],tr:170,pal:[0xd0c8b8,0xbab2a4,0xc9bfa8,0xa8a196]}}[sc]||{nb:100,zr:[70,160],w:[6,14],h:[5,12],d:[8,14],tr:50,pal:[0xb8b8b0,0xa8aaa8]};
-  var NB=T.nb,cg=new THREE.BoxGeometry(1,1,1);cg.translate(0,.5,0);
+  var NB=Math.round(T.nb*Math.max(1,LK.dens)),cg=new THREE.BoxGeometry(1,1,1);cg.translate(0,.5,0);
   var wtex=t3Tex(128,128,function(x,w,h){x.fillStyle='#e6e6e0';x.fillRect(0,0,w,h);for(var r=0;r<7;r++)for(var cc=0;cc<5;cc++){x.fillStyle='#48535c';x.fillRect(8+cc*24,8+r*17,15,10)}});
   var etex=t3Tex(128,128,function(x,w,h){x.fillStyle='#000';x.fillRect(0,0,w,h);for(var r=0;r<7;r++)for(var cc=0;cc<5;cc++){if(hsh(r*9+cc*5+3)>.42){x.fillStyle='#ffd78a';x.fillRect(8+cc*24,8+r*17,15,10)}}});
   var bm=new THREE.MeshLambertMaterial({color:0xffffff,map:wtex,emissive:0xffffff,emissiveMap:etex,emissiveIntensity:0});mats.push(bm);S.bldMat=bm;
@@ -2768,8 +2826,8 @@ function t3BuildSurround(S,sc,far){
     for(var k=0;k<nw;k++){if(hsh(seedK*13+k)>.4)lp.push([x+(hsh(seedK*7+k)-.5)*w*.8,dd.position.y+2+k*3.9+hsh(seedK+k)*1.6,zf])}
   }
   var i0;for(i0=0;i0<NB;i0++){
-    var w=lerp(T.w[0],T.w[1],hsh(i0)),h=lerp(T.h[0],T.h[1],Math.pow(hsh(i0+5),sc==='city'?2.2:1.4)),d=lerp(T.d[0],T.d[1],hsh(i0+9)),z=lerp(T.zr[0],T.zr[1],hsh(i0+3)),x=(hsh(i0+1)-.5)*560;
-    put(i0,x,z,w,h,d,T.pal,i0);
+    var w=lerp(T.w[0],T.w[1],hsh(i0)),h=lerp(T.h[0],T.h[1],Math.pow(hsh(i0+5),sc==='city'?2.2:1.4)),d=lerp(T.d[0],T.d[1],hsh(i0+9)),z=lerp(T.zr[0],T.zr[1],hsh(i0+3)),x=(hsh(i0+1)-.5)*560*LK.spread+LK.bx;
+    if(LK.dens<1&&hsh(i0+500)>LK.dens){dd.position.set(0,-50,0);dd.scale.set(.01,.01,.01);dd.rotation.set(0,0,0);dd.updateMatrix();im.setMatrixAt(i0,dd.matrix);im.setColorAt(i0,col.setHex(0x888888))}else put(i0,x,z,w,h,d,T.pal,i0);
   }
   for(var j0=0;j0<40;j0++){   // 左右の海岸沿いの小さな建物
     var sd=j0%2?1:-1,x2=sd*lerp(300,520,hsh(j0+31)),z2=lerp(-200,30,hsh(j0+41));
@@ -2777,11 +2835,11 @@ function t3BuildSurround(S,sc,far){
   }
   im.frustumCulled=false;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;g.add(im);
   // 木
-  var NT=T.tr+30,tg=new THREE.ConeGeometry(1,1,6);tg.translate(0,.5,0);var tm=new THREE.MeshLambertMaterial({color:0xffffff});mats.push(tm);
+  var NT=Math.round(T.tr*LK.tree)+30,tg=new THREE.ConeGeometry(1,1,6);tg.translate(0,.5,0);var tm=new THREE.MeshLambertMaterial({color:0xffffff});mats.push(tm);
   var tim=new THREE.InstancedMesh(tg,tm,NT);
   for(var t=0;t<NT;t++){
     var tx,tz,ty;
-    if(t<T.tr){tx=(hsh(t+200)-.5)*620;tz=lerp(22,210,hsh(t+210));ty=QT}
+    if(t<NT-30){tx=(hsh(t+200)-.5)*620;tz=lerp(22,210,hsh(t+210));ty=QT}
     else{var sd2=t%2?1:-1;tx=sd2*lerp(285,540,hsh(t+220));tz=lerp(-240,30,hsh(t+230));ty=1.6}
     var th=lerp(5,11,hsh(t+240)),tr=lerp(1.5,3,hsh(t+250));
     dd.position.set(tx,ty,tz);dd.scale.set(tr,th,tr);dd.rotation.set(0,0,0);dd.updateMatrix();tim.setMatrixAt(t,dd.matrix);
@@ -2790,12 +2848,118 @@ function t3BuildSurround(S,sc,far){
   tim.frustumCulled=false;tim.instanceMatrix.needsUpdate=true;if(tim.instanceColor)tim.instanceColor.needsUpdate=true;g.add(tim);
   // 街灯(夜は光る)
   var lampM=M(0x3a4044),gl=[];
-  for(var x3=-120;x3<=120;x3+=20){if(x3===0)continue;B(.2,5.6,.2,x3,QT+2.8,QZ+5,lampM);gl.push([x3,QT+5.7,QZ+5])}
+  for(var x3=-120;x3<=120;x3+=LK.lampStep){if(x3===0)continue;B(.2,5.6,.2,x3,QT+2.8,QZ+5,lampM);gl.push([x3,QT+5.7,QZ+5])}
   var gp=new Float32Array(gl.length*3);gl.forEach(function(q,i){gp[i*3]=q[0];gp[i*3+1]=q[1];gp[i*3+2]=q[2]});
   var gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.BufferAttribute(gp,3));
   S.lampGlow=new THREE.Points(gg,new THREE.PointsMaterial({color:0xffe6a8,size:7,sizeAttenuation:true,map:t3Glow(255,230,160,.25),transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));
   S.lampGlow.frustumCulled=false;g.add(S.lampGlow);
+  t3BuildLook(S,LK);
   // 窓明かり
+}
+
+/* ---- 立ち位置ごとの景色の違い (v1.3) ---- */
+var T3LOOK={
+  _:{rot:0,spread:1,bx:0,dens:1,tree:1,lampStep:20,boats:[],brk:[],ships:[],cranes:[],boulders:[],tetra:[]},
+  // 舞子・橋の真下: 橋が頭上近く。陸側は住宅が少なめ、沖に船
+  umi:{rot:0,dens:.75,bx:-40,boats:[[-55,-70,7,0xe8e4d8],[75,-120,9,0xd5d9dc]],ships:[[-170,-230,60,0x4a5560]]},
+  // 舞子漁港: 左手に防波堤と灯台、停泊した漁船が多い。橋は左奥
+  gyoko:{rot:.55,dens:1.2,bx:60,boats:[[22,-14,6,0xe9e2d2],[34,-28,6,0xd9c7a0],[-18,-34,7,0xe8e4d8],[46,-52,5.5,0xc9d5da],[-40,-70,8,0xe9e2d2]],brk:[{side:-1,x:-30,len:70,lh:0xff5a4a}],tetra:[[-34,-14,5],[-26,-24,4]]},
+  // 岩屋・内側: 港口の左右に灯台。船が並ぶ。山は正面
+  naka:{rot:0,dens:.9,bx:0,lampStep:14,boats:[[16,-12,6.5,0xe8e4d8],[-22,-16,7,0xd9c7a0],[30,-26,6,0xe9e2d2],[-34,-36,5.5,0xc9d5da]],brk:[{side:-1,x:-42,len:60,lh:0xff5a4a},{side:1,x:46,len:50,lh:0x4ad07a}]},
+  // 岩屋・外向き: 海峡に開けた堤防。右手にテトラ、船は遠く、建物は少ない
+  soto:{rot:-.6,dens:.45,bx:-150,tree:1.4,boats:[[110,-150,10,0xd5d9dc]],ships:[[160,-260,90,0x3f4a54]],tetra:[[22,-6,7],[30,-18,6],[26,-30,5]]},
+  // 南港・護岸: クレーンとコンテナ、タンカー。建物が密集
+  goan:{rot:.3,dens:1.25,bx:30,lampStep:16,tree:.4,cranes:[[92,-52,30],[128,-60,34],[-110,-70,28]],ships:[[-60,-190,110,0x2f3a44],[140,-210,80,0x5a2f2f]],boats:[[60,-40,7,0xe8e4d8]]},
+  // 南港・外向きの角: 左にテトラ、遠くに大きな船
+  tsuno:{rot:-.8,dens:.9,bx:-90,lampStep:30,tree:.5,ships:[[90,-170,120,0x34404a],[-120,-230,70,0x4a5560]],tetra:[[-22,-8,7],[-30,-20,6],[-26,-34,5]],boats:[[70,-60,6,0xe9e2d2]]},
+  // 加太・堤防の先: 友ヶ島を望む。先端に灯台、漁船
+  teibo:{rot:0,dens:.5,bx:140,tree:1.8,lampStep:40,boats:[[-50,-60,6,0xe9e2d2],[40,-90,6.5,0xd9c7a0]],brk:[{side:1,x:36,len:46,lh:0xff5a4a}]},
+  // 加太・磯寄り: 岩だらけ。建物はほとんど無し
+  iso:{rot:.7,dens:.2,bx:200,tree:2.4,lampStep:60,boulders:[[-14,4,9],[-26,2,7],[18,3,8],[32,5,10],[-40,3,6],[44,2,6],[-16,-3,5],[22,-5,4]],boats:[[-90,-110,6,0xe9e2d2]]}
+};
+function t3LookOf(sid){return Object.assign({},T3LOOK._,T3LOOK[sid]||{})}
+function t3BuildLook(S,LK){
+  var g=S.g,bob=[],glow=[],blink=[];S.bob=bob;
+  var hm=new THREE.MeshLambertMaterial({color:0xffffff}),dark=new THREE.MeshLambertMaterial({color:0x2c3338});
+  var concM=new THREE.MeshLambertMaterial({color:0x8d9396}),rockM=new THREE.MeshLambertMaterial({color:0x6a6e6a});
+  var bx=new THREE.BoxGeometry(1,1,1);
+  function mesh(geo,mat,x,y,z,sx,sy,sz,ry){var m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);if(ry)m.rotation.y=ry;g.add(m);return m}
+  function colM(c){return new THREE.MeshLambertMaterial({color:c})}
+  // 漁船
+  LK.boats.forEach(function(b,i){
+    var x=b[0],z=b[1],L=b[2],c=b[3],grp=new THREE.Group();grp.position.set(x,0,z);grp.rotation.y=(hsh(i*7+x)-.5)*1.4;g.add(grp);
+    var mh=colM(c),mb=colM(0x2d4a63);
+    var h=new THREE.Mesh(bx,mh);h.scale.set(L,1.1,L*.32);h.position.set(0,.1,0);grp.add(h);
+    var st=new THREE.Mesh(bx,mb);st.scale.set(L,.25,L*.32+.05);st.position.set(0,-.3,0);grp.add(st);
+    var ca=new THREE.Mesh(bx,colM(0xf1efe8));ca.scale.set(L*.28,1.5,L*.22);ca.position.set(-L*.12,1.3,0);grp.add(ca);
+    var mast=new THREE.Mesh(bx,dark);mast.scale.set(.12,3.2,.12);mast.position.set(L*.2,2.1,0);grp.add(mast);
+    bob.push([grp,hsh(i+3)*6.28]);
+    var lp=new THREE.Vector3(L*.2,3.8,0);grp.updateMatrixWorld(true);grp.localToWorld(lp);glow.push([lp.x,lp.y,lp.z]);
+  });
+  // 防波堤 + 灯台
+  LK.brk.forEach(function(b){
+    var x=b.x,len=b.len,z0=-14;
+    mesh(bx,concM,x,.8,z0-len/2,4.2,2.6,len);mesh(bx,colM(0xa9aeb0),x,2.15,z0-len/2,4.4,.2,len);
+    // 消波ブロック
+    for(var k=0;k<len/5;k++){var zz=z0-k*5-2;[-1,1].forEach(function(sd){mesh(bx,rockM,x+sd*3.4,.2,zz,2.4+hsh(k+sd)*.8,1.6,2.8,hsh(k*3+sd)*1.6)})}
+    var lz=z0-len-1;
+    mesh(new THREE.CylinderGeometry(.9,1.3,6.5,10),colM(0xf2f2ee),x,5.4,lz,1,1,1);
+    mesh(new THREE.CylinderGeometry(1.3,1.3,1.2,10),colM(b.lh),x,9.3,lz,1,1,1);
+    blink.push([x,9.9,lz,b.lh]);
+  });
+  // 船(遠景のシルエット寄り)
+  LK.ships.forEach(function(s,i){
+    var x=s[0],z=s[1],L=s[2],c=s[3],h=L*.12;
+    mesh(bx,colM(c),x,h*.5,z,L,h,L*.17,.05*(i?1:-1));
+    mesh(bx,colM(0xe6e3dc),x-L*.38,h+L*.04,z,L*.12,L*.1,L*.14);
+    for(var k=0;k<5;k++)glow.push([x-L*.38+(k-2)*L*.02,h+L*.05,z+L*.08]);
+  });
+  // クレーン
+  LK.cranes.forEach(function(c,i){
+    var x=c[0],z=c[1],h=c[2],cm=colM(i%2?0xc9d0d4:0xd9a23a);
+    [-5,5].forEach(function(d){mesh(bx,cm,x+d,h/2,z,.7,h,.7)});
+    mesh(bx,cm,x,h,z,13,1.1,1.1);mesh(bx,cm,x+15,h+.4,z,32,.8,.8);
+    mesh(bx,dark,x+30,h-3,z,.3,5,.3);
+    blink.push([x,h+2.4,z,0xff4a40],[x+31,h+.9,z,0xff4a40]);
+  });
+  // テトラポッド風の積み石
+  LK.tetra.forEach(function(t){
+    for(var k=0;k<t[2];k++){var a=hsh(k*5+t[0])*6.28,r=hsh(k*3+t[1])*3.2;
+      mesh(bx,rockM,t[0]+Math.cos(a)*r,.2+hsh(k)*.6,t[1]+Math.sin(a)*r*1.5,2.6,1.7+hsh(k+9),2.6,hsh(k*2)*3)}
+  });
+  // 岩(足元・磯寄り)
+  LK.boulders.forEach(function(b,i){
+    var s=b[2],zz=b[1]+4.2,yy=zz>=4.2?2.9+s*.1:.1+s*.1;mesh(new THREE.IcosahedronGeometry(1,0),rockM,b[0],yy,zz,s*.9,s*.55,s*.8,hsh(i)*3);
+  });
+  // 夜の明かりと灯台の点滅
+  if(glow.length){
+    var gp=new Float32Array(glow.length*3);glow.forEach(function(q,i){gp[i*3]=q[0];gp[i*3+1]=q[1];gp[i*3+2]=q[2]});
+    var gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.BufferAttribute(gp,3));
+    S.lkGlow=new THREE.Points(gg,new THREE.PointsMaterial({color:0xfff0b8,size:3.4,sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));
+    S.lkGlow.frustumCulled=false;g.add(S.lkGlow);
+  }
+  if(blink.length){
+    var bp=new Float32Array(blink.length*3);blink.forEach(function(q,i){bp[i*3]=q[0];bp[i*3+1]=q[1];bp[i*3+2]=q[2]});
+    var bgm=new THREE.BufferGeometry();bgm.setAttribute('position',new THREE.BufferAttribute(bp,3));
+    S.lkBl=new THREE.Points(bgm,new THREE.PointsMaterial({color:0xff5a4a,size:5,sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false,fog:false,blending:THREE.AdditiveBlending}));
+    S.lkBl.frustumCulled=false;g.add(S.lkBl);
+  }
+}
+function t3UpdLook(S,ts,litN){
+  if(S.bob)S.bob.forEach(function(b){b[0].position.y=Math.sin(ts/900+b[1])*.12;b[0].rotation.z=Math.sin(ts/1300+b[1])*.03});
+  if(S.lkGlow)S.lkGlow.material.opacity=litN*.9;
+  if(S.lkBl)S.lkBl.material.opacity=litN*(.35+.65*(Math.sin(ts/500)>0?1:0));
+}
+
+var _t3lv=null;
+function t3Listen(){
+  if(!_t3lv)_t3lv=new THREE.Vector3();
+  T3.cam.getWorldDirection(_t3lv);
+  AU.listen(Math.atan2(-_t3lv.x,-_t3lv.z),_t3lv.y);
+}
+function auSplashArgs(){
+  if(!G||G.view!=='3d'||!T3.ok)return [0,1];
+  var rel=T3.psi-AU.yaw;return [-Math.sin(rel)*.9,.35+.65*(.5+.5*Math.cos(rel))];
 }
 
 /* ---------- 景色を見て選ぶ(3Dプレビュー) ---------- */
@@ -2924,6 +3088,159 @@ function gyBind(){
   if(store.settings.gyro)gyOn(true);
 }
 
+/* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
+var VER='1.3';
+var ERRS=[];
+window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
+window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
+
+var ovEl=$('#ov'),ovMode=null,helpI=0,repKind='bug';
+function ovClose(){
+  ovEl.hidden=true;ovEl.innerHTML='';
+  if(ovMode==='help'&&!store.settings.seenHelp){store.settings.seenHelp=true;save()}
+  ovMode=null;
+}
+var HELP=[
+  {t:'ゲームの流れ',b:['ポイントと立ち位置を選び、道具(エギの号数・カラー)を決めたら、4分間の釣りが始まります。','ゲームの中では時間が10倍の速さで進みます。潮もマズメ(朝夕の薄暗い時間)も、刻々と変わります。','4分間で釣れたイカの重さが点数になります。']},
+  {t:'狙って投げる',b:['画面の海面をタップすると、狙う位置が決まります。遠いほど画面の上のほうです。','下のキャストボタンで投げます。','「3D自分目線」でジャイロをONにすると、スマホを向けた方向と距離へ投げられます(画面中央のリングが着水点)。']},
+  {t:'沈めて、シャクる',b:['着水したらカウントを見て、狙いの深さまで沈めます。','シャクると、タップ1回、続けて2回(ツーピッチ)、押し続け(ロング)の3種類が使えます。','イカが抱くのは、たいていシャクったあとのフォール中です。']},
+  {t:'アタリ・ヒット・タモ入れ',b:['アタリが出たら、すぐシャクって合わせます。ラインの目印が止まって震えたらアタリです。','足元までイカがついてきたら、巻くのを止めてエギを落とすと抱きます。','ヒットしたら巻きます。イカが走る時は手を止め、張りすぎるとライン切れ、緩めすぎるとバレます。','寄せたらタモ入れ。緑の位置でタップします。']},
+  {t:'条件を読む',b:['時間帯・潮・水の濁り・天気で、イカの動きが変わります。準備画面のヒントを見てください。','同じ色や同じ動きを続けるとイカが慣れます。色・号数・シャクリ方を変えるのがコツです。','立ち位置でも景色と潮の当たり方が変わります。「景色を3Dで見て選ぶ」で見比べられます。']},
+  {t:'視点とジャイロ',b:['画面の右上のボタンで、横から・自分目線(2D)・3D自分目線・3D水中カメラを切り替えられます。','3D自分目線の「ジャイロ」をONにすると、スマホを動かして360°見渡せます。向きがずれたら「正面に合わせる」を押します。','iPhoneは最初に許可の確認が出ます。3Dはネット接続が必要で、重いときは2Dにしてください。']},
+  {t:'記録とランキング',b:['釣った記録はこの端末に残り、「記録と図鑑」で見られます。称号を集めてみましょう。','ランキングはニックネームで参加できます(登録不要)。自己申告のスコアなので、仲間内の遊び向けです。','困ったときは、メニュー下の「不具合・ご意見を送る」から伝えられます。']}
+];
+function helpRender(){
+  var p=HELP[helpI],last=helpI===HELP.length-1;
+  ovEl.innerHTML='<div class="ovbox" role="dialog" aria-label="遊び方">'+
+    '<div class="ovhead"><b>遊び方 '+(helpI+1)+' / '+HELP.length+'</b><button class="btn ghost" data-act="close" type="button">閉じる</button></div>'+
+    '<div class="ovbody"><h3>'+p.t+'</h3>'+p.b.map(function(x){return '<p>'+x+'</p>'}).join('')+'</div>'+
+    '<div class="ovdots">'+HELP.map(function(_,i){return '<i class="'+(i===helpI?'on':'')+'"></i>'}).join('')+'</div>'+
+    '<div class="ovfoot"><button class="btn" data-act="prev" type="button"'+(helpI?'':' disabled')+'>前へ</button>'+
+    '<button class="btn primary" data-act="'+(last?'close':'next')+'" type="button">'+(last?'はじめる':'次へ')+'</button></div></div>';
+}
+function helpOpen(){helpI=0;ovMode='help';ovEl.hidden=false;helpRender()}
+
+function reportText(){
+  var kinds={bug:'不具合',idea:'ご意見・要望',feat:'ほしい機能'};
+  var msg=($('#repMsg')&&$('#repMsg').value||'').trim();
+  var g=G&&!G.over?G:null;
+  var info=['リアルエギング v'+VER,'種類: '+kinds[repKind],'内容: '+(msg||'(未入力)'),
+    '---(自動で付く情報)---',
+    '画面: '+screen.width+'x'+screen.height+' / '+(navigator.userAgent||'').replace(/\s+/g,' ').slice(0,110),
+    '3D: '+(typeof THREE==='undefined'?'読込失敗':(T3&&T3.ok?'OK':'未使用'))+' / ジャイロ: '+(typeof GY!=='undefined'&&GY.on&&GY.ready?'ON':'OFF')+(g?(' / 視点: '+g.view):''),
+    g?('場所: '+g.pt.name+' / '+g.st.name+' / '+g.cond.bandLabel):'場所: (釣り中ではない)',
+    'エラー: '+(ERRS.length?ERRS.join(' | '):'なし')];
+  return info.join('\n');
+}
+function repOpen(){
+  ovMode='rep';ovEl.hidden=false;
+  ovEl.innerHTML='<div class="ovbox" role="dialog" aria-label="不具合・ご意見">'+
+    '<div class="ovhead"><b>不具合・ご意見を送る</b><button class="btn ghost" data-act="close" type="button">閉じる</button></div>'+
+    '<div class="ovbody"><div class="chips" id="repKinds"></div>'+
+    '<textarea class="txt" id="repMsg" rows="5" maxlength="600" placeholder="どこで・何をしたら・どうなったか、を書いてください(例: 加太でジャイロを押したら景色が逆に動いた)"></textarea>'+
+    '<p class="fine">下のボタンで、LINEなどに文章を渡せます。このゲームを教えてくれた人に送ってください。機種名や画面サイズなど、直すのに必要な情報が自動で付きます。個人情報は付きません。</p></div>'+
+    '<div class="ovfoot"><button class="btn" data-act="copy" type="button">コピーする</button><button class="btn primary" data-act="share" type="button">送る(共有)</button></div></div>';
+  chipGroup($('#repKinds'),[{v:'bug',html:'不具合'},{v:'idea',html:'ご意見'},{v:'feat',html:'ほしい機能'}],function(){return repKind},function(v){repKind=v});
+}
+function repDone(msg){toast(msg,'good',2200)}
+function repCopy(){
+  var t=reportText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){repDone('コピーしました')},function(){repFallback(t)})}else repFallback(t);
+}
+function repFallback(t){
+  var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-999px;top:0';document.body.appendChild(ta);ta.select();
+  var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);repDone(ok?'コピーしました':'コピーできませんでした。画面を撮って送ってください');
+}
+function repShare(){
+  var t=reportText();
+  if(navigator.share){navigator.share({title:'リアルエギング 不具合・ご意見',text:t}).catch(function(){})}else repCopy();
+}
+ovEl.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');
+  if(!b){if(e.target===ovEl)ovClose();return}
+  var a=b.getAttribute('data-act');
+  if(a==='close')ovClose();
+  else if(a==='next'){helpI=Math.min(HELP.length-1,helpI+1);helpRender()}
+  else if(a==='prev'){helpI=Math.max(0,helpI-1);helpRender()}
+  else if(a==='copy')repCopy();
+  else if(a==='share')repShare();
+});
+$('#helpBtn').addEventListener('click',helpOpen);
+$('#repBtn').addEventListener('click',repOpen);
+
+/* ---------- 称号・通算 ---------- */
+function stat(){
+  var s=store.stat;
+  if(!s)s=store.stat={total:0,g:0,color:{},pt:{},band:{}};
+  return s;
+}
+var BADGES=[
+  {id:'first',name:'初めての1杯',desc:'イカを1杯釣る',ok:function(s){return s.total>=1}},
+  {id:'t20',name:'20杯達成',desc:'通算で20杯釣る',ok:function(s){return s.total>=20}},
+  {id:'kou',name:'コウイカ確認',desc:'コウイカを釣る',ok:function(){return !!store.dex.kou}},
+  {id:'g500',name:'500g超え',desc:'アオリイカ500g以上',ok:function(){return (store.dex.aori||{max:0}).max>=500}},
+  {id:'g1000',name:'キロアップ',desc:'アオリイカ1000g以上',ok:function(){return (store.dex.aori||{max:0}).max>=1000}},
+  {id:'g2000',name:'モンスター',desc:'アオリイカ2000g以上',ok:function(){return (store.dex.aori||{max:0}).max>=2000}},
+  {id:'five',name:'一晩で5杯',desc:'1回の釣行で5杯釣る',ok:function(s){return (s.bestRun||0)>=5}},
+  {id:'allpt',name:'全ポイント制覇',desc:'すべてのポイントで釣る',ok:function(s){return POINTS.every(function(p){return (s.pt[p.id]||0)>=1})}},
+  {id:'allcol',name:'カラーマスター',desc:'6色すべてで釣る',ok:function(s){return EGI_COLORS.every(function(c){return (s.color[c.id]||0)>=1})}},
+  {id:'dawn',name:'朝マズメ使い',desc:'朝マズメに3杯釣る',ok:function(s){return (s.band.dawn||0)>=3}},
+  {id:'dusk',name:'夕マズメ使い',desc:'夕マズメに3杯釣る',ok:function(s){return (s.band.dusk||0)>=3}},
+  {id:'night',name:'夜の住人',desc:'夜に3杯釣る',ok:function(s){return (s.band.night||0)>=3}},
+  {id:'g10',name:'釣行10回',desc:'10回釣行する',ok:function(s){return (store.games||0)>=10}}
+];
+function badgeCheck(){
+  var s=stat(),got=[];
+  if(!store.badges)store.badges={};
+  BADGES.forEach(function(b){if(!store.badges[b.id]&&b.ok(s)){store.badges[b.id]=Date.now();got.push(b.name)}});
+  return got;
+}
+function noteCatch(sq){
+  var s=stat(),c=G.cond;
+  s.total++;s.g+=sq.w;
+  s.color[G.colorId]=(s.color[G.colorId]||0)+1;
+  s.pt[G.pt.id]=(s.pt[G.pt.id]||0)+1;
+  s.band[c.band]=(s.band[c.band]||0)+1;
+  var d=store.dex[sq.sp];if(d&&!d.first)d.first={t:Date.now(),pt:G.pt.name.replace(/^.*?・/,''),egi:G.egiSize.n.toFixed(1)+'号'+colorById(G.colorId).name,w:sq.w};
+  var got=badgeCheck();
+  if(got.length)setTimeout(function(){toast('称号を獲得: '+got.join('、'),'good',3200)},1900);
+}
+function noteGame(){
+  var s=stat();store.games=(store.games||0)+1;
+  s.bestRun=Math.max(s.bestRun||0,G.catches.length);
+  badgeCheck();
+}
+
+/* ---------- 記録と図鑑(釣果ノート) ---------- */
+var SP_INFO={
+  aori:'潮の動く朝夕のマズメに。ブレイクや藻場の際を、フォールで見せて抱かせる。',
+  kou:'砂地の底に張りつく。エギを底近くでゆっくり動かすと抱く。',
+  gashira:'岩・護岸・藻場の底に潜む外道。底を引きすぎると根掛かりに注意。'
+};
+function fmtD(t){var d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()}
+var logAll=false;
+function renderRecords(){
+  var el=$('#records'),s=stat(),rows='';
+  POINTS.forEach(function(pt){var b=store.best[pt.id];rows+='<div class="row"><span>'+pt.name+'</span><span>'+(b?('最高 '+b.score+'点'):'未挑戦')+'</span><span>'+(b?('最大 '+b.maxW+'g'):'')+'</span></div>'});
+  var sum='<div class="nbsum"><div><b>'+(store.games||0)+'</b><small>釣行</small></div><div><b>'+s.total+'</b><small>釣果(杯)</small></div><div><b>'+(s.g/1000).toFixed(1)+'</b><small>合計 kg</small></div><div><b>'+((store.dex.aori||{max:0}).max)+'</b><small>最大アオリ g</small></div></div>';
+  var nGot=BADGES.filter(function(b){return store.badges&&store.badges[b.id]}).length;
+  var bd='<p class="lab" style="margin:12px 0 4px">称号 '+nGot+' / '+BADGES.length+'</p><div class="bdgs">'+BADGES.map(function(b){var on=store.badges&&store.badges[b.id];return '<span class="bdg'+(on?' on':'')+'" title="'+b.desc+'">'+(on?b.name:'？ '+b.desc)+'</span>'}).join('')+'</div>';
+  var dex='<p class="lab" style="margin:12px 0 4px">図鑑</p>'+Object.keys(SPECIES).map(function(k){
+    var d=store.dex[k];
+    return '<div class="dexc"><div class="rec"><div class="row" style="border:0"><span><b>'+SPECIES[k].name+'</b></span><span>'+(d?(d.n+'匹'):'未確認')+'</span><span>'+(d?('最大 '+d.max+'g'):'')+'</span></div></div>'+
+      '<p class="fine">'+(d?((d.first?('初釣果 '+fmtD(d.first.t)+' '+d.first.pt+'・'+d.first.egi+' '+d.first.w+'g。'):'')+SP_INFO[k]):'ヒント: '+SP_INFO[k])+'</p></div>'}).join('');
+  var mx=1;EGI_COLORS.forEach(function(c){mx=Math.max(mx,s.color[c.id]||0)});
+  var col='';if(s.total){col='<p class="lab" style="margin:12px 0 4px">エギのカラー別 釣果</p>'+EGI_COLORS.map(function(c){var n=s.color[c.id]||0;return '<div class="cbar"><span class="sw" style="background:linear-gradient(135deg,'+c.c1+','+c.c2+')"></span><span>'+c.name+'</span><i style="width:'+Math.round(n/mx*100)+'%"></i><b>'+n+'</b></div>'}).join('')}
+  var log='';
+  if(store.log.length){
+    var lst=store.log.slice(0,logAll?60:6);
+    log='<p class="lab" style="margin:12px 0 4px">最近の釣果(この端末のみ)</p>'+lst.map(function(l){return '<div class="row"><span>'+(l.t?fmtD(l.t)+' ':'')+l.pt+' '+l.band+'</span><span>'+l.w+'g</span><span>'+(l.sp&&SPECIES[l.sp]&&l.sp!=='aori'?SPECIES[l.sp].name:l.egi)+'</span></div>'}).join('')+
+      (store.log.length>6?'<button class="btn ghost" id="logMore" type="button" style="margin-top:6px">'+(logAll?'たたむ':'もっと見る('+Math.min(60,store.log.length)+'件まで)')+'</button>':'');
+  }
+  el.innerHTML=sum+bd+'<p class="lab" style="margin:12px 0 4px">ポイント別</p><div class="rec">'+rows+'</div>'+dex+col+log;
+  var mb=$('#logMore');if(mb)mb.onclick=function(){logAll=!logAll;renderRecords()};
+}
+
 /* ---------- ループとHUD ---------- */
 var rafId=0,pausedFlag=false;
 function loop(ts){
@@ -3003,6 +3320,7 @@ $('#rAgain').addEventListener('click',function(){startGame(G.pt,G.st,store.setti
 
 /* ---------- 起動 ---------- */
 renderToday();renderPoints();renderRecords();renderRank();show('menu');setTimeout(rankInit,0);
+if(!store.settings.seenHelp)setTimeout(helpOpen,500);
 rafId=requestAnimationFrame(loop);
 if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
 })();
