@@ -6,6 +6,12 @@
 </head>
 <body>
 <title>リアルエギング</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f2c3b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="リアルエギング">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADABAMAAACg8nE0AAAAGFBMVEUPLDsaVm7J4OXIMmrreKDwoL7///8KCgpCgJ6RAAADFUlEQVR42u2XT2vUQBjGn+xs0e2hO7UFYQ9l3QriLRI/QBfpB/EbiUc/hB9AClsQPLW6R0GIoQcpou54ELawyXhoNslkksxMkoqH9zllM9n3N8/7zl+ARCKRSCQSiUQikUgkEolEIpFIJBKJRCL9c3mdIzAfiJe1zcMusYMM0rODg0dcCvXVZZ+A5xwAVERtkgbu8Ye8omvM7w3ATtKHffW1+tWsNYA9yx650uCr/Z62HUU+r35/zP98yX9NW6co8KoHyAHH/GUxatQOECi/cjODKYCdaW4gaeeAlRMPpeBz3YAboDwWvWLOv++KHd2AE4D5dRPTA5In945Se0UDTgB9LvEc8B5g51wz4AIIjHRfN+AAYBWTq1KKAXtA5WKzrYgERsANF5oBa0DtYrYFDF7hNYRmwBrgNzcLDCdvHkvdgO1aFBjaIx+nwDvdgKUDU3zE5wA2EQChGrADMPMnewDeAsAqcd/0mW/+Rn5Mt2kZOQNs4gNyFbfdMn100aCPAtxq2RLgN0+w7g7KM6rvFFlnKO7t4OXmxxUgHWtsBnSssXuKhFsJjADW1GthzlCnIkub+8EtgM25dQlElYFLwxUqHp7Kn5+EW7+luQB5jq+eervHk/F6XW6f6H9Zj8oGGu6A8GbqnlX61uO1J9FV/tEvi2G6jcsCi1mwEpB5fBw1DsP0IiSzXEweXufNNzV/K+Zy/NlqouXjgAVOg3UQNd/0s6vc8CR/+2NZuFcYFNouFZvC28MX1gZC01Iwyh6vpsXBtXddO4iKSkyTp7BUbJSGQ/WyWBc/cllNF86rkTm+AogXpRXBuBJGcAIohLiHAuvLdbwo3VWaE9TiVBEvei1ARZrjM9sDQxihDQA4s9rtktDSZ2GiZV17cB/Ah8ZpFlqf8Kp6eSEMNbbufl0aUkJUFz5CRwAuhKztqFP4yhoAwLfxNQCsfpfLkHx1XE28fcMHM/eh7wYobjoh3GU+2WWVSNrEt3CQmmiRHXsAMAuBOwXc5TWWAAQgAAEIQAACEIAABCAAAQhAAAIQgAAEIAAB/ivAXyvWt6WbQbU4AAAAAElFTkSuQmCC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
@@ -206,7 +212,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 1.4</p>
+        <p class="eyebrow">テスト版 1.5</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -1925,6 +1931,8 @@ var FB_URL='https://real-egi-default-rtdb.asia-southeast1.firebasedatabase.app';
 RK.mode=null;
 var PT_SHORT={maiko:'舞子',iwaya:'岩屋',nanko:'南港',kada:'加太',yura:'由良',sumoto:'洲本',kojima:'小島',kishiwada:'岸和田',rinku:'りんくう',saika:'雑賀崎'};
 function sanitizeNick(s){return String(s||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,12)}
+function plausible(x){var s=numOk(x.s),w=numOk(x.w);return w<=3500&&s<=Math.round(1.5*Math.max(w,1050))}
+function cleanBoards(o){var r={};if(o&&typeof o==='object')Object.keys(o).forEach(function(k){var x=o[k];if(x&&typeof x==='object'&&plausible(x))r[k]=x});return r}
 function numOk(v){v=Number(v);return isFinite(v)?clamp(Math.round(v),0,99999):0}
 function myNick(){
   if(!store.settings.nick){store.settings.nick='アングラー'+Math.floor(100+Math.random()*900);save()}
@@ -1933,7 +1941,7 @@ function myNick(){
 function rowsFor(tab){
   var out=[];
   RK.docs.forEach(function(r){
-    var d=r.d||{},b=(d.boards&&typeof d.boards==='object')?d.boards:{},v=0,g=0,sub='',bigPt='';
+    var d=r.d||{},b=cleanBoards(d.boards),v=0,g=0,sub='',bigPt='';
     POINTS.forEach(function(p){var x=b[p.id];if(x&&numOk(x.w)>g){g=numOk(x.w);bigPt=PT_SHORT[p.id]||p.name}});
     if(tab==='tot'){var k=0;POINTS.forEach(function(p){var x=b[p.id];if(x&&numOk(x.s)>0){v+=numOk(x.s);k++}});sub=k+'か所';}
     else if(tab==='big'){v=g;sub=bigPt;g=0;}
@@ -3220,7 +3228,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='1.4';
+var VER='1.5';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -3238,6 +3246,7 @@ var HELP=[
   {t:'アタリ・ヒット・タモ入れ',b:['アタリが出たら、すぐシャクって合わせます。ラインの目印が止まって震えたらアタリです。','足元までイカがついてきたら、巻くのを止めてエギを落とすと抱きます。','ヒットしたら巻きます。イカが走る時は手を止め、張りすぎるとライン切れ、緩めすぎるとバレます。','寄せたらタモ入れ。緑の位置でタップします。']},
   {t:'条件を読む',b:['ネットにつながっていると、今日・あしたは実際の天気・風・波・水温・潮の高さ(気象データ)を使います。つながらない時は簡易計算になります。','時間帯・潮・水の濁り・天気で、イカの動きが変わります。準備画面のヒントを見てください。','同じ色や同じ動きを続けるとイカが慣れます。色・号数・シャクリ方を変えるのがコツです。','立ち位置でも景色と潮の当たり方が変わります。「景色を3Dで見て選ぶ」で見比べられます。']},
   {t:'視点とジャイロ',b:['画面の右上のボタンで、横から・自分目線(2D)・3D自分目線・3D水中カメラを切り替えられます。','3D自分目線の「ジャイロ」をONにすると、スマホを動かして360°見渡せます。向きがずれたら「正面に合わせる」を押します。','iPhoneは最初に許可の確認が出ます。3Dはネット接続が必要で、重いときは2Dにしてください。']},
+  {t:'アプリのように使う',b:['iPhone(Safari)は、共有ボタンから「ホーム画面に追加」を選びます。','Android(Chrome)は、右上のメニューから「アプリをインストール」または「ホーム画面に追加」を選びます。','追加すると、ホーム画面から全画面で起動できます。一度開いたあとは、電波が弱い場所でも起動できます(天気とランキングは通信が必要です)。']},
   {t:'記録とランキング',b:['釣った記録はこの端末に残り、「記録と図鑑」で見られます。称号を集めてみましょう。','ランキングはニックネームで参加できます(登録不要)。自己申告のスコアなので、仲間内の遊び向けです。','困ったときは、メニュー下の「不具合・ご意見を送る」から伝えられます。']}
 ];
 function helpRender(){
@@ -3457,6 +3466,7 @@ $('#rAgain').addEventListener('click',function(){startGame(G.pt,G.st,store.setti
 renderToday();renderPoints();renderRecords();renderRank();show('menu');LIVE.ensure(POINTS[0]).then(renderToday);setTimeout(rankInit,0);
 if(!store.settings.seenHelp)setTimeout(helpOpen,500);
 rafId=requestAnimationFrame(loop);
+try{if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}catch(e){}
 if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
 })();
 </script>
