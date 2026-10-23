@@ -212,9 +212,9 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 2.3</p>
+        <p class="eyebrow">テスト版 2.4</p>
         <h1>リアルエギング</h1>
-        <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
+        <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで、体力が続くかぎり何点釣れるかを競います。体力が減ったら、ごはん(コンビニ)かベッドで回復!ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
       <button class="btn primary" id="vilBtn" type="button" style="width:100%">島の村へ(RPG)</button>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="helpBtn" type="button">遊び方を見る</button><button class="btn" id="repBtn" type="button">不具合・ご意見を送る</button></div>
@@ -226,7 +226,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
       <h2 class="sec">ランキング</h2>
       <div class="panel" id="rankBox" style="display:flex;flex-direction:column;gap:12px">
         <p class="fine" id="rankStatus">読み込み中…</p>
-        <p class="fine" id="rankHow"><b>点数のしくみ:</b> 釣れた1杯ごとに「重さ(g)÷10 × 魚種の係数」が加点されます(アオリイカ×1、コウイカ×0.8、ガシラ×0.3)。たとえばアオリ500gなら50点。4分間の合計がスコアで、各ポイントの自己ベストだけが残ります。「総合」は全ポイントのベストの合計、「最大アオリ」は最も重く釣ったアオリイカの重さです。</p>
+        <p class="fine" id="rankHow"><b>点数のしくみ:</b> 釣れた1杯ごとに「重さ(g)÷10 × 魚種の係数」が加点されます(アオリイカ×1、コウイカ×0.8、ガシラ×0.3)。たとえばアオリ500gなら50点。1回の釣りの合計がスコアで、各ポイントの自己ベストだけが残ります。「総合」は全ポイントのベストの合計、「最大アオリ」は最も重く釣ったアオリイカの重さです。</p>
         <div class="grp" id="nickRow" hidden><label class="lab" for="nick">ニックネーム(12文字まで)</label>
           <div style="display:flex;gap:8px"><input class="txt" id="nick" type="text" maxlength="12" autocomplete="off"><button class="btn" id="nickSave" type="button">保存</button></div></div>
         <div class="chips" id="rankTabs"></div>
@@ -282,7 +282,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
         <div class="chips" id="cSound"></div>
         <p class="fine">視点は4種類(ゲーム中も右上のボタンで切り替え可)。「横から」は断面図、「自分目線(2D)」は軽い一人称、「3D自分目線」は波立つ海を立体で見る視点(画面の「ジャイロ」を押すと、スマホを向けた方向に景色が動いて見渡せ、向けた方向・距離へ投げられます)、「3D水中カメラ」はエギとイカを水中から追う視点です(3Dはネット接続が必要で、古いスマホでは重いことがあります。その場合は2Dにしてください)。かんたん表示ではアタリに印が出ます。リアル表示では、見えるのは水面近くのイカとラインの動きだけです。</p>
       </div>
-      <div class="startbar"><button class="btn primary" id="goBtn" type="button">釣りを始める(4分)</button></div>
+      <div class="startbar"><button class="btn primary" id="goBtn" type="button">釣りを始める</button></div>
     </div>
   </section>
 
@@ -290,6 +290,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
     <div class="hud">
       <div class="hud-r1">
         <button class="hbtn" id="quitBtn" type="button">納竿</button>
+        <button class="hbtn" id="eatBtn" type="button">食べる</button>
         <button class="hbtn" id="sndBtn" type="button">音 ON</button>
         <button class="hbtn" id="viewBtn" type="button">自分目線</button>
         <div class="nm" id="gName" hidden></div>
@@ -389,7 +390,7 @@ function mixc(a,b,t){var A=toRGB(a),B=toRGB(b);return [lerp(A[0],B[0],t),lerp(A[
 function css(c,a){c=toRGB(c);return 'rgba('+Math.round(c[0])+','+Math.round(c[1])+','+Math.round(c[2])+','+(a===undefined?1:a)+')'}
 
 /* ---------- データ ---------- */
-var TS=10; // ゲーム内の時間は実時間の10倍速(4分=40分)
+var TS=10; // ゲーム内の時間は実時間の10倍速
 var EGI_SIZES=[{n:2.5,g:10,sink:4.0,idx:0},{n:3.0,g:15,sink:3.4,idx:1},{n:3.5,g:20,sink:3.0,idx:2},{n:4.0,g:25,sink:2.6,idx:3}];
 var EGI_COLORS=[
   {id:'natural',name:'ナチュラル',c1:'#8fb89a',c2:'#3f6a52',fit:{dawn:.6,dusk:.6,day_clear:1,day_dull:.5,night:.4}},
@@ -844,7 +845,7 @@ function tideSvg(c){
   [0,6,12,18,24].forEach(function(h){s+='<text x="'+sx(h)+'" y="95" font-size="10" text-anchor="'+(h===0?'start':h===24?'end':'middle')+'" fill="currentColor" opacity=".6">'+h+'時</text>'});
   c.highs.forEach(function(h){s+='<text x="'+clamp(sx(h),24,W-24)+'" y="'+(sy(1)-6)+'" font-size="9" text-anchor="middle" fill="currentColor">満 '+fmtH(h)+'</text>'});
   c.lows.forEach(function(h){s+='<text x="'+clamp(sx(h),24,W-24)+'" y="'+(sy(-1)+13)+'" font-size="9" text-anchor="middle" fill="currentColor">干 '+fmtH(h)+'</text>'});
-  s+='<text x="'+W/2+'" y="109" font-size="8" text-anchor="middle" fill="currentColor" opacity=".55">桃色の帯 = ゲームの4分間(ゲーム内の約40分)</text>';
+  s+='<text x="'+W/2+'" y="109" font-size="8" text-anchor="middle" fill="currentColor" opacity=".55">桃色の帯 = 釣りを始めてからの約40分(ゲーム内)</text>';
   var el=$('#tideSvg');el.style.color='var(--ink)';el.innerHTML=s;
 }
 
@@ -894,7 +895,7 @@ function shiftRips(){
 function mkG(pt,stand,S,c,spots){
   return {pt:pt,st:stand,prof:stand.profile,S:S,cond:c,spots:spots,tk:tackleOf(S),egiSize:egiBySize(S.egi),colorId:S.color,easy:S.easy,
      view:(S.view==='fps'||S.view==='3d'||S.view==='uw')?S.view:'side',c0:c.d0.getTime(),h0:c.hour,dynT:0,lastBand:c.band,ripRising:null,
-     phase:'ready',timeLeft:240,t:0,score:0,catches:[],squids:[],aim:25,lockT:0,fx:[],markPh:0,
+     phase:'ready',timeLeft:99999,t:0,score:0,catches:[],squids:[],aim:25,lockT:0,fx:[],markPh:0,
      egi:{x:0,z:0,mode:'fall',t:0,sinceJerk:99,jerkT:0,jerkLen:.38,jerkDz:1,jerkDx:.7,jerkKind:'tap',lastKind:'tap',pitch:0,bottomT:0,snagTries:0,flyT:0,flyDur:.9,landX:25,lastJerkAt:-9,lastInterval:null,heldBy:null,foot:false,surfT:0,lastSpeed:0},
      fatigue:0,cfat:{},spawnT:3,migT:8,hudT:0,chipT:0,over:false,land:null,fight:null,
      stats:{casts:0,hugs:0,refused:0,missedHug:0,hookFail:0,snags:0,breaks:0,bare:0,lost:0,landFail:0,foot:0,egiUse:{}}};
@@ -957,7 +958,7 @@ function doCast(){
   var sig=G.tk.rod.sig+G.cond.wind*.12+(aim>40?.05*(aim-40):0);
   var landX=clamp(aim+gauss()*sig,5,59);
   var E=G.egi;E.landX=landX;E.flyT=0;E.flyDur=.5+landX/60*.5;
-  G.phase='fly';G.stats.casts++;
+  G.phase='fly';G.stats.casts++;staCost(.8);
   var k=G.colorId,nm=G.egiSize.n.toFixed(1)+'号'+colorById(k).name;G.stats.egiUse[nm]=(G.stats.egiUse[nm]||0)+1;
   EGI_COLORS.forEach(function(c){if(c.id===k)G.cfat[c.id]=Math.min(.5,(G.cfat[c.id]||0)+.06);else G.cfat[c.id]=Math.max(0,(G.cfat[c.id]||0)-.05)});
   setMode('water');
@@ -1022,7 +1023,7 @@ function retarget(s){
 var lastTs=0;
 function update(dt){
   if(!G||G.over)return;
-  G.timeLeft-=dt;if(G.timeLeft<=0){G.timeLeft=0;endGame();return}
+  staDrain(dt);if(staOn()&&staGet()<=0){endGame();return}
   G.t+=dt;if(G.lockT>0)G.lockT-=dt;
   if(input.reel&&(G.phase==='water'||G.phase==='fight')){G.rcT=(G.rcT||0)-dt;if(G.rcT<=0){G.rcT=.075;AU.reelClick()}}
   dynUpdate(dt);
@@ -1169,7 +1170,7 @@ function startFight(s){
   var aori=s.sp==='aori';
   var pull=aori?clamp(.3+.7*Math.sqrt(s.w/1500),.3,1):(s.sp==='kou'?.32:.36);
   G.fight={s:s,dist:Math.max(4,E.x),start:Math.max(4,E.x),z0:s.z,T:45,slackT:0,overT:0,jet:0,jetCd:aori?rnd(1.2,2.4):999,stamina:1,pull:pull,ink:0,noJet:!aori};
-  G.phase='fight';setMode('fight');buzz([60,40,60]);
+  G.phase='fight';setMode('fight');staCost(1.5);buzz([60,40,60]);
   toast('ヒット! '+(s.w>=1000?'重い…!':''),'good',1600);AU.bite();
 }
 function updateFight(dt){
@@ -1233,7 +1234,7 @@ function netMiss(){
     if(Math.random()<.45){
       s.state='leave';s.leaveT=4;s.cool=8;G.stats.landFail++;G.phase='ready';setMode('ready');toast('タモ入れに失敗… イカが外れた','bad',2600);buzz([100]);return;
     }
-    G.phase='fight';setMode('fight');
+    G.phase='fight';setMode('fight');staCost(1.5);
     G.fight=Object.assign(G.fight,{dist:6,T:55,slackT:0,overT:0,jet:.6,jetCd:2,stamina:Math.max(.4,G.fight.stamina)});s.state='hooked';
     toast('タモに入らず、イカが走った! もう一度寄せよう','warn',2400);return;
   }
@@ -1273,6 +1274,7 @@ function endGame(){
    '<li><span>足元まで追ってきた</span><span>'+st.foot+'回</span></li>'+
    '<li><span>抱かれたのに乗らず</span><span>'+(st.missedHug+st.hookFail)+'回</span></li><li><span>バレ・ライン切れ・タモ失敗</span><span>'+(st.bare+st.breaks+st.landFail)+'回</span></li><li><span>根掛かり</span><span>'+st.snags+'回</span></li><li><span>使ったエギ</span><span style="text-align:right">'+uses+'</span></li>';
   var adv=[];
+  if(staOn()&&staGet()<=0)adv.push('体力がなくなりました。家のベッドで寝るか、コンビニのごはんを食べると回復します。');
   if(!G.catches.length)adv.push('今回は釣れませんでした。'+c.bandLabel+'は'+bestColors(c).map(function(x){return x.name}).join('・')+'系が合う条件です。');
   if(st.refused>=3)adv.push('見切られた回数が多めです。エギのカラーや号数を替えたり、シャクリの間隔や種類(ツーピッチ・ロング)を変えてみましょう。');
   if(st.missedHug+st.hookFail>=2)adv.push('アタリに気づいても合わせ遅れがありました。フォール中のラインの目印が止まる瞬間に注目しましょう。');
@@ -1934,7 +1936,7 @@ var FB_URL='https://real-egi-default-rtdb.asia-southeast1.firebasedatabase.app';
 RK.mode=null;
 var PT_SHORT={maiko:'舞子',iwaya:'岩屋',nanko:'南港',kada:'加太',yura:'由良',sumoto:'洲本',kojima:'小島',kishiwada:'岸和田',rinku:'りんくう',saika:'雑賀崎'};
 function sanitizeNick(s){return String(s||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,12)}
-function plausible(x){var s=numOk(x.s),w=numOk(x.w);return w<=3500&&s<=Math.round(1.5*Math.max(w,1050))}
+function plausible(x){var s=numOk(x.s),w=numOk(x.w);return w<=3500&&s<=25000}
 function cleanBoards(o){var r={};if(o&&typeof o==='object')Object.keys(o).forEach(function(k){var x=o[k];if(x&&typeof x==='object'&&plausible(x))r[k]=x});return r}
 function numOk(v){v=Number(v);return isFinite(v)?clamp(Math.round(v),0,99999):0}
 function myNick(){
@@ -3231,7 +3233,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='2.3';
+var VER='2.4';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -3243,7 +3245,7 @@ function ovClose(){
   ovMode=null;
 }
 var HELP=[
-  {t:'ゲームの流れ',b:['ポイントと立ち位置を選び、道具(エギの号数・カラー)を決めたら、4分間の釣りが始まります。','ゲームの中では時間が10倍の速さで進みます。潮もマズメ(朝夕の薄暗い時間)も、刻々と変わります。','4分間で釣れたイカの重さが点数になります。']},
+  {t:'ゲームの流れ',b:['ポイントと立ち位置を選び、道具(エギの号数・カラー)を決めたら、釣りが始まります。時間の制限はなく、体力がなくなるまで釣れます。体力は、コンビニのごはんかベッドで回復できます。','ゲームの中では時間が10倍の速さで進みます。潮もマズメ(朝夕の薄暗い時間)も、刻々と変わります。','1回の釣りで釣れたイカの重さが点数になります。']},
   {t:'島の村(RPG)',b:['メニューの「島の村へ」から、どうぶつの島に行けます。スティックで歩き、近づくと出るボタンで話したり入ったりします。','釣った魚はクーラーに入ります。村人のお願い事に使ったり、お店で売ってコインにできます。','コインで竿やお守りを買うと、遠くまで飛ばせて、イカの活性も上がります。釣るとレベルも上がります。','家具を買って島にならべたり、家に入って着がえたり釣果の棚を見たりできます。釣りは、海ぞいを歩いて光る丸い印の釣り場に着くとできます(「釣り場へ移動」で直行もOK)。']},
   {t:'狙って投げる',b:['画面の海面をタップすると、狙う位置が決まります。遠いほど画面の上のほうです。','下のキャストボタンで投げます。','「3D自分目線」でジャイロをONにすると、スマホを向けた方向と距離へ投げられます(画面中央のリングが着水点)。']},
   {t:'沈めて、シャクる',b:['着水したらカウントを見て、狙いの深さまで沈めます。','シャクると、タップ1回、続けて2回(ツーピッチ)、押し続け(ロング)の3種類が使えます。','イカが抱くのは、たいていシャクったあとのフォール中です。']},
@@ -3423,7 +3425,7 @@ var NPCS=[
 ];
 function rpgInit(){
   if(!store.rpg)store.rpg={};
-  var r=store.rpg,d={started:false,coin:100,xp:0,lv:1,fish:[],quests:{},furn:{},placed:[],rod:0,charm:0,avatar:{sp:'cat',col:0},intro:false,sold:0};
+  var r=store.rpg,d={started:false,coin:100,xp:0,lv:1,fish:[],quests:{},furn:{},placed:[],rod:0,charm:0,avatar:{sp:'cat',col:0},intro:false,sold:0,sta:100,food:{}};
   for(var k in d)if(r[k]===undefined)r[k]=d[k];
   return r;
 }
@@ -3597,7 +3599,7 @@ function mkFurn(id){
 }
 
 /* ---- 島のワールド作り・移動・昼夜 ---- */
-var VPOS={shop:{x:-14,z:-12},home:{x:15,z:-12},dockEnd:{x:0,z:48}};
+var VPOS={shop:{x:-14,z:-12},home:{x:15,z:-12},dockEnd:{x:0,z:48},cvs:{x:0,z:-23}};
 function isleGeo(fn,top,bot,seg){
   var g=new THREE.CylinderGeometry(1,1,top-bot,seg||72,1);g.translate(0,(top+bot)/2,0);
   var p=g.attributes.position;
@@ -3669,7 +3671,7 @@ function vilBuild(){
   // 木・花・岩
   var placedT=[];
   function farFromAll(x,z,m){
-    var pts=[[VPOS.shop.x,VPOS.shop.z,8],[VPOS.home.x,VPOS.home.z,7],[0,0,8],[0,-5.5,3.5],[-13,-6,3],[15,-6,3],[-32,-8,6],[-32,6,6]];
+    var pts=[[VPOS.shop.x,VPOS.shop.z,8],[VPOS.home.x,VPOS.home.z,7],[0,0,8],[0,-5.5,3.5],[-13,-6,3],[15,-6,3],[-32,-8,6],[-32,6,6],[0,-23,8],[0,-14,3]];
     for(var i=0;i<pts.length;i++)if(Math.hypot(x-pts[i][0],z-pts[i][1])<pts[i][2]+(m||0))return false;
     if(Math.abs(x)<3&&z>3)return false;
     for(var j=0;j<NPCS.length;j++)if(Math.hypot(x-NPCS[j].x,z-NPCS[j].z)<3)return false;
@@ -3702,6 +3704,10 @@ function vilBuild(){
     for(var s3=0;s3<3;s3++)cg.add(vMesh(vSphere(),cm,s3*3-3,hsh(cl+s3)*1,0,3.4,1.6,2.4));
     cg.position.set(-420+cl*55,55+hsh(cl*5)*20,-160+hsh(cl*3)*420);W.add(cg);V.clouds.push(cg)}
   // 星
+  pathSeg(W,0,-5.5,0,-19,2.4);
+  var cvs=mkBuilding(7,3.6,5,'#eaf7ee','#2a9d5c','コンビニ');cvs.position.set(VPOS.cvs.x,.6,VPOS.cvs.z);W.add(cvs);
+  for(var ci2=0;ci2<5;ci2++){var cw=vMesh(vBox(),vMat(ci2%2?'#ffffff':'#2a9d5c'),VPOS.cvs.x-2.4+ci2*1.2,3.0+.6,VPOS.cvs.z+3.2,1.2,.12,1.5);cw.rotation.x=.35;W.add(cw)}
+  addCol(VPOS.cvs.x-2,VPOS.cvs.z,2.6);addCol(VPOS.cvs.x+2,VPOS.cvs.z,2.6);
   var sp=new Float32Array(300*3);for(var si=0;si<300;si++){var th=hsh(si*2.1)*Math.PI*2,ph=Math.acos(hsh(si*3.7)*.9+.1);sp[si*3]=Math.sin(ph)*Math.cos(th)*320;sp[si*3+1]=Math.cos(ph)*320;sp[si*3+2]=Math.sin(ph)*Math.sin(th)*320}
   var sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
   V.stars=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false,transparent:true,opacity:0,fog:false,depthWrite:false}));W.add(V.stars);
@@ -3786,7 +3792,7 @@ function vilTime(){
   var sec=document.createElement('section');sec.className='screen';sec.id='s-village';sec.hidden=true;
   sec.innerHTML='<canvas id="vilCv"></canvas>'+
   '<div class="vhud"><div class="vpill"><b id="vLv">Lv.1</b><span class="vxp"><i id="vXp"></i></span></div><div class="vpill" id="vClock" style="margin-left:auto">12:00</div><div class="vpill">🪙 <b id="vCoin">0</b></div></div>'+
-  '<div class="vtop"><button class="vb" id="vBag" type="button">バッグ</button><button class="vb" id="vQst" type="button">クエスト</button><button class="vb" id="vSpots" type="button">釣り場へ移動</button></div>'+
+  '<div class="vtop"><button class="vb" id="vBag" type="button">バッグ</button><button class="vb" id="vQst" type="button">クエスト</button><button class="vb" id="vSpots" type="button">釣り場へ移動</button><button class="vb" id="vHomeB" type="button">家へ帰る</button></div>'+
   '<div id="vJoy"><i id="vKnob"></i></div><button class="vb go" id="vAct" type="button" hidden>はなす</button>'+
   '<div id="vDlg" hidden><div class="nm" id="vNm"></div><div class="tx" id="vTx"></div><div class="ch" id="vCh"></div><span class="nx" id="vNx">▼</span></div>'+
   '<div id="vToast"></div><div class="vov" id="vov" hidden></div>';
@@ -3952,10 +3958,11 @@ function vilAction(){
   if(n.type==='npc')talkNpc(n.npc.d);
   else if(n.type==='shop')openShop('sell');
   else if(n.type==='home')enterHouse();
+  else if(n.type==='cvs')vSay('コンビニ',['いらっしゃいませ〜!','おにぎり、お弁当、ドリンク…体力が減ったらどうぞ。'],{choices:[{t:'買い物する',fn:function(){vSayEnd();openCvs()}},{t:'やめる'}]});
   else if(n.type==='exit')leaveHouse();
   else if(n.type==='ward')openHouse();
   else if(n.type==='shelf')openTrophy();
-  else if(n.type==='bed')vSay('ベッド',['ふかふかのベッドだ…。','ぐっすりねむって、あしたも釣りがんばろう!']);
+  else if(n.type==='bed')vSay('ベッド',['ふかふかのベッドだ…。','ひと眠りして、体力を回復する?'],{choices:[{t:'ねる',fn:function(){vSayEnd();vSleep()}},{t:'やめる'}]});
   else if(n.type==='dock')vSay('桟橋',['ここから釣りに出かけられるよ。','どのポイントにする?'],{choices:[{t:'釣りに出かける',fn:function(){vSayEnd();leaveVillage('menu')}},{t:'やめる'}]});
   else if(n.type==='furn')vilPick(n.o);
   else if(n.type==='spot'){var mk=n.mk;vSay('釣り場',[mk.pt.name,mk.pt.blurb||''],{choices:[{t:'ここで釣る',fn:function(){vSayEnd();leaveVillage('prep:'+mk.id)}},{t:'やめる'}]})}
@@ -3964,11 +3971,13 @@ $('#vAct').addEventListener('click',vilAction);
 $('#vBag').addEventListener('click',function(){if(!V.talking)openBag()});
 $('#vQst').addEventListener('click',function(){if(!V.talking)openQuests()});
 $('#vSpots').addEventListener('click',function(){if(!V.talking&&!V.modal)openSpots()});
+$('#vHomeB').addEventListener('click',function(){if(V.talking||V.modal)return;if(V.inB){vToast('もう家のなかだよ');return}VACT.warpHome()});
 /* --- 更新 --- */
 function vilHud(){
   var r=rpgInit(),L=rpgLvOf(r.xp);
   $('#vLv').textContent='Lv.'+r.lv;$('#vXp').style.width=(L.max?100:Math.round(L.cur/L.need*100))+'%';$('#vCoin').textContent=r.coin;
   var d=new Date();$('#vClock').textContent=pad2(d.getHours())+':'+pad2(d.getMinutes());
+  if(typeof staUpdate==='function')staUpdate();
 }
 function vilNearest(){
   var p=V.pl,best=null;
@@ -3977,10 +3986,11 @@ function vilNearest(){
     var de=Math.hypot(R.cx-p.x,R.hd-p.z);if(de<1.9)cand(de,{type:'exit',label:'そとに出る'});
     var dw=Math.hypot(R.cx-2.3-p.x,1.0-p.z);if(dw<1.7)cand(dw,{type:'ward',label:'着がえる'});
     var ds2=Math.hypot(R.cx-p.x,-2.1-p.z);if(ds2<1.7)cand(ds2,{type:'shelf',label:'つり果の棚'});
-    var db=Math.hypot(R.cx-1.4-p.x,-1.6-p.z);if(db<1.4)cand(db,{type:'bed',label:'ベッドを見る'});
+    var db=Math.hypot(R.cx-1.4-p.x,-1.6-p.z);if(db<1.4)cand(db,{type:'bed',label:'ベッドでねる'});
     return best}
   V.npcs.forEach(function(n){var d=Math.hypot(n.x-p.x,n.z-p.z);if(d<2.8)cand(d,{type:'npc',npc:n,label:n.d.name+'と話す'})});
   var ds=Math.hypot(VPOS.shop.x-p.x,VPOS.shop.z+4.3-p.z);if(ds<3)cand(ds+.5,{type:'shop',label:'お店に入る'});
+  var dc2=Math.hypot(VPOS.cvs.x-p.x,VPOS.cvs.z+4.3-p.z);if(dc2<3)cand(dc2+.5,{type:'cvs',label:'コンビニに入る'});
   var dh=Math.hypot(VPOS.home.x-p.x,VPOS.home.z+4.0-p.z);if(dh<3)cand(dh+.5,{type:'home',label:'家に入る'});
   var dd=Math.hypot(VPOS.dockEnd.x-p.x,VPOS.dockEnd.z-p.z);if(dd<4.2)cand(dd+.5,{type:'dock',label:'釣りに出かける'});
   CO_MK.forEach(function(m){var d=Math.hypot(m.x-p.x,m.z-p.z);if(d<3.4)cand(d-.5,{type:'spot',mk:m,label:m.s+'で釣る'})});
@@ -4349,6 +4359,7 @@ function coScenery(W){
 }
 function openSpots(){
   var html='<h3>全体図・釣り場へ移動</h3><canvas id="vMapBig" width="660" height="486" style="width:100%;display:block;border-radius:12px;border:2px solid #e3c99a;margin-bottom:8px"></canvas><p style="font-size:12px;color:#8a6b4a;margin:0 0 6px">歩いても行けます。「ワープ」で、その釣り場の入口にすぐ移動します。</p>';
+  html+='<div class="vrow"><span><b>マイハウス</b><small>村・自分の家</small></span><button class="vb go" data-v="warpHome" type="button">ワープ</button></div>';
   CO_MK.forEach(function(m){html+='<div class="vrow"><span><b>'+m.pt.name+'</b><small>'+m.pt.area+'</small></span><button class="vb go" data-v="warp" data-id="'+m.id+'" type="button">ワープ</button></div>'});
   html+='<button class="vb" data-v="toMenu" type="button" style="width:100%;margin-top:10px">メニューの釣り場一覧へ</button><button class="vb" data-v="close" type="button" style="width:100%;margin-top:8px">とじる</button>';
   vOv(html);coMapUpdate();
@@ -4357,6 +4368,10 @@ VACT.warp=function(id){
   var m=CO_MK.filter(function(x){return x.id===id})[0];if(!m)return;
   vOvClose();
   vFadeDo(function(){V.pl.x=m.x;V.pl.z=m.z+1.2;V.pl.ry=0;V.plG.position.set(V.pl.x,.6,V.pl.z);V.cam.position.set(V.pl.x,14,V.pl.z+18);V.nearest=null;$('#vAct').hidden=true});
+};
+VACT.warpHome=function(){
+  vOvClose();
+  vFadeDo(function(){V.pl.x=VPOS.home.x;V.pl.z=VPOS.home.z+4.2;V.pl.ry=0;V.plG.position.set(V.pl.x,.6,V.pl.z);V.cam.position.set(V.pl.x,14,V.pl.z+18);V.nearest=null;$('#vAct').hidden=true});
 };
 VACT.toMenu=function(){leaveVillage('menu')};
 
@@ -4379,12 +4394,21 @@ function coMapBase(w,h,big){
   x.strokeStyle='#8a8478';x.lineWidth=Math.max(2,CO_BR.hw*2*s*.8);x.beginPath();x.moveTo(X(CO_BR.a[0]),Z(CO_BR.a[1]));x.lineTo(X(CO_BR.b[0]),Z(CO_BR.b[1]));x.stroke();
   var fs=big?Math.round(w/30):0;
   if(big){x.font='bold '+fs+'px sans-serif';x.textAlign='center';x.lineJoin='round';x.lineWidth=4;
-    [['大阪湾',-110,70,'#5b95ad'],['村',0,0,'#4a7a3a'],['淡路島',-205,45,'#4a7a3a']].forEach(function(t){x.strokeStyle='rgba(255,255,255,.7)';x.fillStyle=t[3];x.strokeText(t[0],X(t[1]),Z(t[2]));x.fillText(t[0],X(t[1]),Z(t[2]))});
+    [['大阪湾',-110,70,'#5b95ad'],['淡路島',-205,45,'#4a7a3a']].forEach(function(t){x.strokeStyle='rgba(255,255,255,.7)';x.fillStyle=t[3];x.strokeText(t[0],X(t[1]),Z(t[2]));x.fillText(t[0],X(t[1]),Z(t[2]))});
   }
   CO_MK.forEach(function(m){
     x.beginPath();x.arc(X(m.x),Z(m.z),big?w/80:w/45,0,7);x.fillStyle='#ffd24a';x.fill();x.lineWidth=big?3:2;x.strokeStyle='#8a5a1a';x.stroke();
     if(big){var L=MAPLBL[m.id]||[0,-9,'c'];x.font='bold '+fs+'px sans-serif';x.textAlign=L[2]==='l'?'left':L[2]==='r'?'right':'center';x.lineWidth=5;x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#5a3d24';x.strokeText(m.s,X(m.x)+L[0]*w/330,Z(m.z)+L[1]*w/330);x.fillText(m.s,X(m.x)+L[0]*w/330,Z(m.z)+L[1]*w/330)}
   });
+  (function(){var hx=X(VPOS.home.x),hz=Z(VPOS.home.z),r=big?w/48:w/26;
+    x.fillStyle='#fff';x.strokeStyle='#8a5a1a';x.lineWidth=big?3:2;x.lineJoin='round';
+    x.beginPath();x.rect(hx-r*.8,hz-r*.1,r*1.6,r*1.1);x.fill();x.stroke();
+    x.fillStyle='#e8392f';x.beginPath();x.moveTo(hx-r*1.1,hz-r*.1);x.lineTo(hx,hz-r*1.1);x.lineTo(hx+r*1.1,hz-r*.1);x.closePath();x.fill();x.stroke();
+    if(big){x.font='bold '+Math.round(w/30)+'px sans-serif';x.textAlign='center';x.lineWidth=5;x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#c0392b';x.strokeText('マイハウス',hx,hz+r*3.1);x.fillText('マイハウス',hx,hz+r*3.1)}
+  })();
+  [[VPOS.shop,'#e86a5c','おみせ'],[VPOS.cvs,'#2a9d5c','コンビニ']].forEach(function(o){var bx=X(o[0].x),bz=Z(o[0].z),r=big?w/70:w/38;
+    x.fillStyle=o[1];x.strokeStyle='#fff';x.lineWidth=big?2:1.5;x.beginPath();x.rect(bx-r,bz-r*.8,r*2,r*1.6);x.fill();x.stroke();
+    if(big){x.font='bold '+Math.round(w/36)+'px sans-serif';var left=o[2]==='おみせ';x.textAlign=left?'right':'center';x.lineWidth=4;x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#5a3d24';var lx=left?bx-r*1.5:bx,ly=left?bz+r*.5:bz-r*1.3;x.strokeText(o[2],lx,ly);x.fillText(o[2],lx,ly)}});
   return {c:c,X:X,Z:Z,s:s};
 }
 function coMapDraw(cv,key,big){
@@ -4412,6 +4436,231 @@ function coMapUpdate(){
   cv.addEventListener('click',function(){if(!V.talking&&!V.modal)openSpots()});
 })();
 
+/* ---- v2.4: みんなのチャット(ntfy.sh 経由・登録不要) ---- */
+var CHAT={base:'https://ntfy.sh',topic:'egi-oosaka-island-k7q3x9',log:[],seen:{},es:null,t0:Date.now(),sentAt:0,unread:0,retry:0,st:'init',joined:false};
+var CHAT_QUICK=['こんにちは!','釣れた!','ナイス〜','どこ釣れてる?','おつかれ!'];
+function chatPlace(){
+  if(V.inB)return '家';
+  var best=null,bd=1e9;
+  CO_MK.forEach(function(m){var d=Math.hypot(V.pl.x-m.x,V.pl.z-m.z);if(d<bd){bd=d;best=m}});
+  if(best&&bd<30)return best.s;
+  return Math.hypot(V.pl.x,V.pl.z)<70?'村':'海ぞい';
+}
+function chatName(){return sanitizeNick(myNick())||'アングラー'}
+function chatPost(o){
+  return fetch(CHAT.base+'/',{method:'POST',body:JSON.stringify({topic:CHAT.topic,message:JSON.stringify(o)})}).then(function(r){if(!r.ok)throw new Error('http'+r.status)});
+}
+function chatSend(text){
+  text=String(text||'').replace(/[\u0000-\u001f<>]/g,' ').trim().slice(0,40);
+  if(!text)return false;
+  var now=Date.now();
+  if(now-CHAT.sentAt<1500){vToast('すこし待ってね');return false}
+  CHAT.sentAt=now;
+  chatPost({k:'c',n:chatName(),a:(rpgInit().avatar||{}).sp||'cat',m:text,l:chatPlace()}).catch(function(){vToast('送れませんでした。電波を確認してね')});
+  return true;
+}
+function chatOnMsg(raw){
+  var d;try{d=JSON.parse(raw)}catch(e){return}
+  if(!d||d.event!=='message'||CHAT.seen[d.id])return;
+  CHAT.seen[d.id]=1;
+  var o;try{o=JSON.parse(d.message)}catch(e){return}
+  if(!o||typeof o!=='object'||(o.k!=='c'&&o.k!=='j'))return;
+  var m={n:sanitizeNick(o.n)||'名無し',a:String(o.a||'').slice(0,12),m:String(o.m||'').replace(/[\u0000-\u001f<>]/g,' ').slice(0,40),l:String(o.l||'').replace(/[\u0000-\u001f<>]/g,'').slice(0,8),k:o.k,t:(+d.time||0)*1000};
+  var live=m.t>=CHAT.t0-5000;
+  if(m.k==='j'){if(live&&m.n!==chatName())vToast(m.n+'さんが島に来たよ',2600);return}
+  CHAT.log.push(m);if(CHAT.log.length>60)CHAT.log.shift();
+  if(live){
+    if(!CHAT.open)CHAT.unread++;
+    chatFeed();chatBadge();
+    if(m.n!==chatName())vBlip(880,1040);
+  }
+  chatRenderLog();
+}
+function chatConnect(){
+  if(CHAT.es)return;
+  try{
+    var es=new EventSource(CHAT.base+'/'+CHAT.topic+'/sse?since=3h');CHAT.es=es;
+    es.onopen=function(){CHAT.st='ok';CHAT.retry=0;chatBadge();
+      if(!CHAT.joined){CHAT.joined=true;chatPost({k:'j',n:chatName()}).catch(function(){})}};
+    es.onmessage=function(e){chatOnMsg(e.data)};
+    es.onerror=function(){
+      CHAT.st='ng';chatBadge();
+      if(es.readyState===2){CHAT.es=null;CHAT.retry++;setTimeout(chatConnect,Math.min(60000,5000*CHAT.retry))}
+    };
+  }catch(e){CHAT.es=null;CHAT.st='ng'}
+}
+function chatFeed(){
+  var box=document.getElementById('vFeed');if(!box)return;
+  var now=Date.now(),L=CHAT.log.filter(function(m){return now-m.t<14000}).slice(-3);
+  box.textContent='';
+  L.forEach(function(m){var p=document.createElement('div');var b=document.createElement('b');b.textContent=m.n+': ';p.appendChild(b);p.appendChild(document.createTextNode(m.m));box.appendChild(p)});
+  box.style.display=L.length&&!CHAT.open?'block':'none';
+  clearTimeout(CHAT.ft);if(L.length)CHAT.ft=setTimeout(chatFeed,3000);
+}
+function chatBadge(){
+  var b=document.getElementById('vChatB');if(!b)return;
+  b.textContent='💬 チャット'+(CHAT.unread?' ('+CHAT.unread+')':'')+(CHAT.st==='ng'?' ×':'');
+}
+function chatRenderLog(){
+  var box=document.getElementById('vChatLog');if(!box)return;
+  var near=box.scrollHeight-box.scrollTop-box.clientHeight<60;
+  box.textContent='';
+  if(!CHAT.log.length){var e=document.createElement('p');e.style.cssText='color:#8a6b4a;font-size:13px;margin:6px 0';e.textContent=CHAT.st==='ng'?'つながっていません。電波を確認してね。':'まだだれもいないよ。最初のひとことをどうぞ!';box.appendChild(e)}
+  CHAT.log.forEach(function(m){
+    var row=document.createElement('div');row.style.cssText='padding:5px 0;border-bottom:1px dashed #e3c99a;font-size:14px;word-break:break-all';
+    var me=m.n===chatName();
+    var h=document.createElement('small');h.style.cssText='display:block;color:#8a6b4a;font-size:11px';
+    var d=new Date(m.t);h.textContent=m.n+(m.l?' @'+m.l:'')+'  '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+    var t=document.createElement('span');t.textContent=m.m;if(me)t.style.color='#2f7a36';
+    row.appendChild(h);row.appendChild(t);box.appendChild(row);
+  });
+  if(near||!box._init){box.scrollTop=box.scrollHeight;box._init=1}
+}
+function openChat(){
+  if(V.talking||V.modal)return;
+  CHAT.open=true;CHAT.unread=0;chatBadge();chatFeed();
+  var html='<h3>みんなのチャット</h3><p style="font-size:11px;color:#8a6b4a;margin:0 0 6px">いま遊んでいる人みんなに見える公開チャットです。本名・住所・電話番号は書かないでね。</p>'+
+  '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span style="font-size:12px">なまえ</span><input id="vChatNm" maxlength="10" style="flex:1;min-width:0;padding:6px 8px;border:2px solid #e3c99a;border-radius:10px;font:inherit;font-size:14px;background:#fff"></div>'+
+  '<div id="vChatLog" style="height:34vh;min-height:120px;overflow:auto;background:#fffdf5;border:2px solid #e3c99a;border-radius:12px;padding:4px 8px;margin-bottom:6px"></div>'+
+  '<div class="vchips" id="vChatQ"></div>'+
+  '<div style="display:flex;gap:6px"><input id="vChatIn" maxlength="40" placeholder="ひとこと(40字まで)" style="flex:1;min-width:0;padding:8px 10px;border:2px solid #e3c99a;border-radius:12px;font:inherit;font-size:16px;background:#fff"><button class="vb go" id="vChatSend" type="button">送る</button></div>'+
+  '<button class="vb" data-v="chatClose" type="button" style="width:100%;margin-top:8px">とじる</button>';
+  vOv(html);
+  var nm=document.getElementById('vChatNm'),inp=document.getElementById('vChatIn'),q=document.getElementById('vChatQ');
+  nm.value=chatName();
+  nm.addEventListener('change',function(){var v=sanitizeNick(nm.value)||'アングラー';nm.value=v;store.settings.nick=v;save();chatRenderLog()});
+  [nm,inp].forEach(function(el){['keydown','keyup'].forEach(function(ev){el.addEventListener(ev,function(e){e.stopPropagation();if(ev==='keydown'&&e.key==='Enter'&&el===inp)go()})})});
+  function go(){if(nm.value!==chatName())nm.dispatchEvent(new Event('change'));if(chatSend(inp.value))inp.value=''}
+  document.getElementById('vChatSend').addEventListener('click',go);
+  CHAT_QUICK.forEach(function(s){var b=document.createElement('button');b.type='button';b.className='vb';b.style.cssText='padding:4px 10px;min-height:32px;font-size:13px';b.textContent=s;b.addEventListener('click',function(){chatSend(s)});q.appendChild(b)});
+  chatRenderLog();
+}
+VACT.chatClose=function(){CHAT.open=false;vOvClose();chatFeed()};
+(function(){
+  var sec=document.getElementById('s-village');if(!sec)return;
+  var css=document.createElement('style');
+  css.textContent='#vChatB{position:absolute;left:10px;top:calc(150px + env(safe-area-inset-top,0px));z-index:5;min-height:34px;padding:4px 10px;font-size:13px}'+
+  '#vFeed{position:absolute;left:10px;top:calc(190px + env(safe-area-inset-top,0px));width:58%;max-width:260px;z-index:5;pointer-events:none;display:none;background:rgba(255,248,230,.88);color:#5a3d24;border-radius:12px;padding:5px 9px;font-size:12px;line-height:1.45;word-break:break-all}';
+  document.head.appendChild(css);
+  var b=document.createElement('button');b.id='vChatB';b.type='button';b.className='vb';sec.appendChild(b);
+  var f=document.createElement('div');f.id='vFeed';sec.appendChild(f);
+  b.addEventListener('click',openChat);
+  chatBadge();
+  setTimeout(chatConnect,1500);
+  /* ふつうにとじた時(背景タップ)も状態を戻す */
+  document.getElementById('vov').addEventListener('click',function(e){if(e.target.id==='vov'&&CHAT.open){CHAT.open=false;chatFeed()}});
+})();
+
+/* ---- v2.4: 体力・ごはん・コンビニ・ベッドで回復 ---- */
+var FOODS=[
+  {id:'tea',n:'お茶',price:60,sta:10},
+  {id:'onigiri',n:'おにぎり',price:100,sta:22},
+  {id:'sand',n:'サンドイッチ',price:180,sta:35},
+  {id:'drink',n:'栄養ドリンク',price:260,sta:42},
+  {id:'bento',n:'のり弁当',price:350,sta:65}
+];
+function staMax(){var r=rpgInit();return 100+Math.floor(((r.lv||1)-1)*1.5)}
+function staOn(){try{return typeof vilAvail==='function'&&vilAvail()}catch(e){return false}}
+function staGet(){var r=rpgInit();if(r.sta===undefined||isNaN(r.sta))r.sta=staMax();return Math.min(r.sta,staMax())}
+function staSet(v){var r=rpgInit();r.sta=Math.max(0,Math.min(staMax(),v));return r.sta}
+var STA={warn:false,sv:0};
+function staDrain(dt){
+  if(!staOn())return;
+  var r=rpgInit(),s=staSet(staGet()-dt*.08);
+  if(s>30)STA.warn=false;
+  else if(s<=25&&!STA.warn){STA.warn=true;toast('体力が減ってきた。「食べる」でごはんを食べよう','warn',3200)}
+  if((STA.sv=(STA.sv||0)+dt)>5){STA.sv=0;save()}
+}
+function staCost(n){if(staOn())staSet(staGet()-n)}
+function staText(){return '体力 '+Math.ceil(staGet())}
+function staUpdate(){
+  var s=staGet(),mx=staMax(),low=s<=mx*.22;
+  var g=document.getElementById('gTime');
+  if(g){g.textContent=staText();g.style.color=low?'#ff7b6b':'';g.style.fontSize='15px';g.style.whiteSpace='nowrap'}
+  var p=document.getElementById('vSta');
+  if(p){p.innerHTML='🍙 体力 <b>'+Math.ceil(s)+'</b>/'+mx;p.style.background=low?'#ffd9d4':''}
+}
+function staCheckStart(){
+  if(!staOn()||staGet()>=8)return false;
+  toast('体力がありません。ごはんを食べるか、家のベッドで寝よう','warn',3200);
+  openEat();return true;
+}
+function foodHave(id){var f=rpgInit().food;return (f&&f[id])||0}
+function foodAdd(id,n){var r=rpgInit();if(!r.food)r.food={};r.food[id]=Math.max(0,(r.food[id]||0)+n)}
+function foodDef(id){return FOODS.filter(function(f){return f.id===id})[0]}
+function doEat(id){
+  var f=foodDef(id);if(!f||foodHave(id)<1)return false;
+  if(staGet()>=staMax()-.5){return 'full'}
+  foodAdd(id,-1);staSet(staGet()+f.sta);save();staUpdate();
+  try{AU.init();AU.resume();AU.tone(520,880,.12,.06,'triangle')}catch(e){}
+  return true;
+}
+function eatMsg(r){if(r==='full')return '体力はじゅうぶんだよ';if(r)return '食べて体力が回復した!';return ''}
+/* 食べるオーバーレイ(どの画面でも出せる) */
+function openEat(){
+  var ov=document.getElementById('eatOv');
+  if(!ov){
+    ov=document.createElement('div');ov.id='eatOv';
+    ov.addEventListener('click',function(e){
+      if(e.target===ov){closeEat();return}
+      var b=e.target.closest('[data-eat]');if(b){var r=doEat(b.getAttribute('data-eat'));var m=document.getElementById('eatMsg');renderEat();if(m=document.getElementById('eatMsg'))m.textContent=eatMsg(r);return}
+      if(e.target.closest('[data-eatclose]'))closeEat();
+    });
+    document.getElementById('app').appendChild(ov);
+  }
+  renderEat();ov.hidden=false;
+  if(typeof G!=='undefined'&&G&&!G.over&&screens.game&&!screens.game.hidden){pausedFlag=true}
+}
+function closeEat(){
+  var ov=document.getElementById('eatOv');if(ov)ov.hidden=true;
+  if(pausedFlag&&typeof G!=='undefined'&&G&&!G.over){pausedFlag=false;lastTs=0}
+}
+function renderEat(){
+  var ov=document.getElementById('eatOv');if(!ov)return;
+  var s=staGet(),mx=staMax(),any=false,h='<div class="eatbox"><h3>ごはんを食べる</h3><div style="font-size:14px;margin-bottom:4px">体力 <b>'+Math.ceil(s)+'</b> / '+mx+'</div><div class="eatbar"><i style="width:'+Math.round(s/mx*100)+'%"></i></div><div id="eatMsg" style="min-height:18px;font-size:13px;color:#2f7a36;margin:4px 0"></div>';
+  FOODS.forEach(function(f){var n=foodHave(f.id);if(n>0){any=true;h+='<div class="eatrow"><span><b>'+f.n+'</b> ×'+n+'<small>体力 +'+f.sta+'</small></span><button type="button" data-eat="'+f.id+'">食べる</button></div>'}});
+  if(!any)h+='<p style="font-size:13px;margin:6px 0">たべものを もっていません。村の「コンビニ」で買えます。ベッドで寝ても全回復します。</p>';
+  h+='<button type="button" data-eatclose="1" class="eatx">とじる</button></div>';
+  ov.innerHTML=h;
+}
+/* コンビニ */
+function openCvs(){
+  var r=rpgInit(),s=staGet(),mx=staMax();
+  var h='<h3>コンビニ</h3><div class="vrow"><span>体力 <b>'+Math.ceil(s)+'</b> / '+mx+'<small>コイン '+r.coin+'</small></span></div><div class="vbar"><i style="width:'+Math.round(s/mx*100)+'%;background:#e8734a"></i></div>';
+  FOODS.forEach(function(f){
+    var n=foodHave(f.id);
+    h+='<div class="vrow"><span><b>'+f.n+'</b><small>体力 +'+f.sta+' / もってる '+n+'</small></span>'+
+      '<button class="vb" data-v="buyFood" data-id="'+f.id+'" type="button"'+(r.coin<f.price?' disabled style="opacity:.5"':'')+'>'+f.price+'コイン</button>'+
+      '<button class="vb go" data-v="eatFood" data-id="'+f.id+'" type="button"'+(n<1?' disabled style="opacity:.4"':'')+'>食べる</button></div>';
+  });
+  h+='<p style="font-size:12px;color:#8a6b4a;margin:8px 0 0">買ったごはんは、釣りの最中も「食べる」ボタンで食べられるよ。</p><button class="vb" data-v="close" type="button" style="width:100%;margin-top:8px">とじる</button>';
+  vOv(h);
+}
+VACT.buyFood=function(id){
+  var f=foodDef(id),r=rpgInit();if(!f||r.coin<f.price)return;
+  r.coin-=f.price;foodAdd(id,1);save();vilHud();openCvs();vToast(f.n+'を買った!');
+};
+VACT.eatFood=function(id){
+  var res=doEat(id);vilHud();openCvs();if(res)vToast(eatMsg(res),1800);
+};
+function vSleep(){
+  vFadeDo(function(){staSet(staMax());STA.warn=false;save();staUpdate();vilHud()},function(){vToast('ぐっすり眠って、体力が全回復した!',3000)});
+}
+(function(){
+  var css=document.createElement('style');
+  css.textContent='#eatOv{position:fixed;inset:0;z-index:90;background:rgba(60,40,20,.5);display:flex;align-items:flex-end;justify-content:center;padding:12px}#eatOv[hidden]{display:none}'+
+  '.eatbox{width:100%;max-width:480px;background:#fff8e6;color:#5a3d24;border:3px solid #e3c99a;border-radius:22px;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));max-height:80%;overflow:auto}.eatbox h3{margin:0 0 8px;font-size:18px}'+
+  '.eatbar{height:12px;border-radius:9px;background:#e9dcc0;overflow:hidden}.eatbar i{display:block;height:100%;background:#e8734a}'+
+  '.eatrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed #e3c99a}.eatrow>span{flex:1;font-size:14px}.eatrow small{display:block;color:#8a6b4a;font-size:12px}'+
+  '.eatrow button,.eatx{appearance:none;border:2px solid #4e9d55;background:#6fbf73;color:#fff;border-radius:14px;padding:8px 14px;font:inherit;font-weight:700;font-size:14px;min-height:40px;cursor:pointer}.eatx{width:100%;margin-top:10px;background:#fff8e6;color:#5a3d24;border-color:#e3c99a}'+
+  '#vSta{position:absolute;left:122px;top:calc(150px + env(safe-area-inset-top,0px));z-index:5;min-height:34px;padding:0 10px;display:flex;align-items:center;gap:4px;font-size:13px;pointer-events:auto;cursor:pointer;border:2px solid #e3c99a}';
+  document.head.appendChild(css);
+  var sec=document.getElementById('s-village');
+  if(sec){var p=document.createElement('div');p.id='vSta';p.className='vpill';sec.appendChild(p);p.addEventListener('click',function(){if(!V.talking&&!V.modal)openEat()})}
+  var eb=document.getElementById('eatBtn');if(eb){eb.addEventListener('click',openEat)}
+  staUpdate();
+})();
+
 /* ---------- ループとHUD ---------- */
 var rafId=0,pausedFlag=false;
 function loop(ts){
@@ -4430,7 +4679,7 @@ function hud(){
   else if(G.phase==='fight'){cnt.innerHTML='ファイト中'}
   else if(G.phase==='land'){cnt.innerHTML='タモ入れ'}
   else if(G.phase==='fly'){cnt.innerHTML='キャスト中'}
-  var t=Math.ceil(G.timeLeft);$('#gTime').textContent=Math.floor(t/60)+':'+pad2(t%60);
+  staUpdate();
   $('#gScore').textContent=G.catches.length+'匹 '+G.score+'点';
   var lk=$('#bCast');var want=G.lockT>0?'仕掛け直し<small>あと'+Math.ceil(G.lockT)+'秒</small>':'キャスト<small>'+(gyActive()?'向けた先へ投げる':'水面をタップして狙う')+'</small>';if(lk.__w!==want){lk.__w=want;lk.innerHTML=want}
   G.chipT-=.1;if(G.chipT<=0){G.chipT=.5;buildChips()}
@@ -4485,9 +4734,9 @@ function openSheet(){
 $('#sheetOk').addEventListener('click',function(){$('#sheet').hidden=true;pausedFlag=false;lastTs=0;store.settings.egi=G.S.egi;store.settings.color=G.S.color;save()});
 $('#prepBack').addEventListener('click',function(){show('menu')});
 lookBind();gyBind();
-$('#goBtn').addEventListener('click',function(){AU.init();AU.resume();startGame(prepPt,curStand(),store.settings)});
+$('#goBtn').addEventListener('click',function(){AU.init();AU.resume();if(staCheckStart())return;startGame(prepPt,curStand(),store.settings)});
 $('#rMenu').addEventListener('click',function(){show('menu');renderRecords()});
-$('#rAgain').addEventListener('click',function(){startGame(G.pt,G.st,store.settings)});
+$('#rAgain').addEventListener('click',function(){if(staCheckStart())return;startGame(G.pt,G.st,store.settings)});
 
 /* ---------- 起動 ---------- */
 renderToday();renderPoints();renderRecords();renderRank();show('menu');LIVE.ensure(POINTS[0]).then(renderToday);
@@ -4499,7 +4748,7 @@ setTimeout(rankInit,0);
 if(!store.settings.seenHelp)setTimeout(helpOpen,500);
 rafId=requestAnimationFrame(loop);
 try{if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}catch(e){}
-if(location.hash==='#debug')window.__egi={update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
+if(location.hash==='#debug')window.__egi={staGet:staGet,staSet:staSet,openCvs:openCvs,openEat:openEat,foodHave:foodHave,CHAT:CHAT,update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
 })();
 </script>
 
