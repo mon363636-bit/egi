@@ -212,7 +212,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 2.6</p>
+        <p class="eyebrow">テスト版 2.7</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで、体力が続くかぎり何点釣れるかを競います。体力が減ったら、ごはん(コンビニ)かベッドで回復!ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -928,7 +928,7 @@ function newSquid(fade,spot){
   var w;
   if(kind==='kou'){w=Math.round(150+Math.pow(Math.random(),1.5)*900);z=sb-.35}
   else if(kind==='gashira'){w=Math.round(80+Math.random()*230);z=sb-.3}
-  else w=Math.round(sizeFor(G.cond.season));
+  else w=Math.min(3400,Math.round(rpgSize(sizeFor(G.cond.season))));
   var form=null;
   if(kind==='aori'&&(sp.kind==='deep'||sp.kind==='rip')){var py=G.cond.season==='winter'?.45:G.cond.season==='spring'?.15:G.cond.season==='autumn'?.03:0;if(Math.random()<py){form='yari';w=Math.round(110+Math.pow(Math.random(),1.5)*520)}}
   return {form:form,id:++uid,sp:kind,x:x,z:z,hx:x,hz:z,spot:sp.id,w:w,state:'cruise',dir:Math.random()<.5?-1:1,tx:x,tz:z,speed:kind==='aori'?rnd(.25,.55):rnd(.12,.28),
@@ -1169,7 +1169,7 @@ function startFight(s){
   var E=G.egi;s.state='hooked';E.heldBy=null;E.foot=false;
   var aori=s.sp==='aori';
   var pull=aori?clamp(.3+.7*Math.sqrt(s.w/1500),.3,1):(s.sp==='kou'?.32:.36);
-  G.fight={s:s,dist:Math.max(4,E.x),start:Math.max(4,E.x),z0:s.z,T:45,slackT:0,overT:0,jet:0,jetCd:aori?rnd(1.2,2.4):999,stamina:1,pull:pull,ink:0,noJet:!aori};
+  G.fight={s:s,dist:Math.max(4,E.x),start:Math.max(4,E.x),z0:s.z,T:45,slackT:0,overT:0,jet:0,jetCd:aori?rnd(1.2,2.4):999,stamina:1,pull:pull*rpgPullMul(),ink:0,noJet:!aori};
   G.phase='fight';setMode('fight');staCost(1.5);buzz([60,40,60]);
   toast('ヒット! '+(s.w>=1000?'重い…!':''),'good',1600);AU.bite();
 }
@@ -1181,7 +1181,7 @@ function updateFight(dt){
   var jetting=F.jet>0,pull=F.pull*(.5+.5*F.stamina);
   if(input.reel){
     F.T+=24*dt*tf;
-    F.dist-=2.6*dt*(jetting?.1:1)*(1-.35*pull);
+    F.dist-=2.6*dt*rpgReel()*(jetting?.1:1)*(1-.35*pull);
     if(F.T>35&&F.T<80)F.stamina=Math.max(.2,F.stamina-.09*dt);
   }else{F.T=Math.max(0,F.T-34*dt);F.dist+=.5*pull*dt}
   if(jetting){F.T+=62*pull*dt*tf;F.dist+=1.6*pull*dt}
@@ -1194,7 +1194,7 @@ function updateFight(dt){
   var bar=$('#fBar');bar.style.width=Math.min(100,F.T/1.0)+'%';bar.style.background=F.T>=85?'#ff7b6b':(F.T<35?'#e3a54a':'#4fcf9a');
   $('#fDist').textContent='あと '+Math.max(0,F.dist-2).toFixed(0)+'m';
   $('#fTxt').textContent=jetting?'イカが走る! 巻くのを止めて':(F.T<35?'テンションが低い':F.T>=85?'張りすぎ!':'いいテンション');
-  if(F.overT>.25){
+  if(F.overT>.25+rpgLineTol()){
     G.stats.breaks++;s.state='gone';G.squids=G.squids.filter(function(q){return q!==s});
     G.phase='ready';G.lockT=5;setMode('ready');toast('ラインブレイク! 張りすぎ(仕掛け直し5秒)','bad',2600);buzz([120]);AU.snag();return;
   }
@@ -1209,7 +1209,7 @@ function updateFight(dt){
 /* タモ入れ */
 function startLand(s){
   var big=Math.sqrt(s.w/2000);
-  G.land={s:s,pos:0,dir:1,speed:.85+.8*big,winW:clamp(.26-.12*big,.12,.26),winC:rnd(.3,.7),miss:0,t:0};
+  G.land={s:s,pos:0,dir:1,speed:.85+.8*big,winW:clamp((.26-.12*big)*rpgNetMul(),.12,.4),winC:rnd(.3,.7),miss:0,t:0};
   s.state='landing';G.phase='land';setMode('land');
   $('#lTxt').textContent='緑の位置でタップ';updateLandUi();
   toast('大型! タモ入れだ','good',1600);
@@ -3233,7 +3233,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='2.6';
+var VER='2.7';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -3404,8 +3404,13 @@ var FURN={
   parasol:{name:'パラソル',price:160,r:.9},
   flag:{name:'はた',price:80,r:.4}
 };
-var RODS=[{n:'ふつうの竿',price:0,d:'はじめの竿'},{n:'しなやか竿',price:600,d:'飛距離+3m、ねらいが少し正確'},{n:'名人の竿',price:2000,d:'飛距離+6m、ねらいがかなり正確'}];
-var CHARMS=[{n:'なし',price:0,d:''},{n:'幸運のお守り',price:400,d:'イカの活性+4%'},{n:'海神のお守り',price:1200,d:'イカの活性+8%'}];
+var RODS=[{n:'ふつうの竿',price:0,lv:1,d:'はじめの竿'},{n:'しなやか竿',price:500,lv:3,d:'飛距離+3m・ねらいが少し正確・ファイトが少し楽'},{n:'名人の竿',price:1500,lv:8,d:'飛距離+6m・ねらいが正確'},{n:'カーボン竿',price:3500,lv:14,d:'飛距離+9m・ねらいがかなり正確'},{n:'伝説の竿',price:7000,lv:20,d:'飛距離+12m・ほぼ狙い通り・大物が寄せやすい'}];
+var CHARMS=[{n:'なし',price:0,lv:1,d:''},{n:'幸運のお守り',price:400,lv:2,d:'イカの活性+4%'},{n:'海神のお守り',price:1200,lv:7,d:'イカの活性+8%'},{n:'大漁のお守り',price:3000,lv:13,d:'イカの活性+12%'},{n:'龍神のお守り',price:6000,lv:19,d:'イカの活性+16%'}];
+var REELS=[{n:'ふつうのリール',price:0,lv:1,d:''},{n:'スムーズリール',price:400,lv:4,d:'巻き取りが12%はやい'},{n:'ハイギアリール',price:1200,lv:10,d:'巻き取りが24%はやい'},{n:'名機リール',price:3000,lv:18,d:'巻き取りが36%はやい'}];
+var LINES=[{n:'ふつうのライン',price:0,lv:1,d:''},{n:'ナイロン強化ライン',price:300,lv:2,d:'張りすぎでも少し切れにくい'},{n:'PEハイグレード',price:1000,lv:9,d:'張りすぎでもかなり切れにくい'},{n:'極太PEライン',price:2500,lv:16,d:'張りすぎでもめったに切れない'}];
+var NETS=[{n:'ふつうのタモ',price:0,lv:1,d:''},{n:'大きいタモ',price:500,lv:5,d:'タモ入れの緑の範囲+15%'},{n:'ワイドタモ',price:1800,lv:12,d:'タモ入れの緑の範囲+30%'}];
+var COOLS=[{n:'ふつうのクーラー(60匹)',price:0,lv:1,d:''},{n:'クーラーL(90匹)',price:600,lv:6,d:'たくさん入る'},{n:'大型クーラー(130匹)',price:1800,lv:13,d:'もっとたくさん入る'},{n:'特大クーラー(180匹)',price:4500,lv:21,d:'ものすごく入る'}];
+var GEARS=[{k:'rod',t:'竿',L:RODS},{k:'charm',t:'お守り',L:CHARMS},{k:'reel',t:'リール',L:REELS},{k:'line',t:'ライン',L:LINES},{k:'net',t:'タモ',L:NETS},{k:'cool',t:'クーラー',L:COOLS}];
 var QUESTS=[
   {id:'q1',npc:'mochi',title:'はじめてのアオリイカ',need:{k:'aori',n:1},coin:200,xp:30,ask:['ねえねえ!アオリイカっていうのが釣れるんだって?','1杯でいいから、見てみたいにゃ!','釣れたらもってきてほしいにゃ。']},
   {id:'q2',npc:'pen',title:'コウイカを探して',need:{k:'kou',n:1},coin:250,xp:40,item:{lamp:1},ask:['ぼくはコウイカが食べたいんだ。','砂地の底にいるらしいよ。エギをゆっくり底で動かすといいって。','釣れたら交換でお礼するよ!']},
@@ -3425,7 +3430,7 @@ var NPCS=[
 ];
 function rpgInit(){
   if(!store.rpg)store.rpg={};
-  var r=store.rpg,d={started:false,coin:100,xp:0,lv:1,fish:[],quests:{},furn:{},placed:[],rod:0,charm:0,avatar:{sp:'cat',col:0},intro:false,sold:0,sta:100,food:{}};
+  var r=store.rpg,d={started:false,coin:100,xp:0,lv:1,fish:[],quests:{},furn:{},placed:[],rod:0,charm:0,avatar:{sp:'cat',col:0},intro:false,sold:0,sta:100,food:{},reel:0,line:0,net:0,cool:0};
   for(var k in d)if(r[k]===undefined)r[k]=d[k];
   return r;
 }
@@ -3433,7 +3438,35 @@ function lvNeed(lv){return 80+40*lv}
 function rpgLvOf(xp){var lv=1,t=0;while(lv<30&&xp>=t+lvNeed(lv)){t+=lvNeed(lv);lv++}return {lv:lv,cur:xp-t,need:lvNeed(lv),max:lv>=30}}
 function rpgRod(){var r=store.rpg;if(!r)return {max:0,sig:0};return {max:r.rod*3+Math.floor((r.lv||1)/6),sig:r.rod*.12}}
 function rpgAct(){var r=store.rpg;if(!r)return 1;return 1+Math.min(.12,.004*((r.lv||1)-1))+r.charm*.04}
-function fishPrice(f){var sp=SPECIES[f.k]||SPECIES.aori;return Math.max(3,Math.round(f.w/10*sp.mult*1.5)+5)}
+function rpgLv(){var r=store.rpg;return (r&&r.lv)||1}
+function rpgSell(){return 1+Math.min(.6,.02*(rpgLv()-1))}
+function rpgSize(w){var lv=rpgLv(),m=1+Math.min(.3,.01*(lv-1));if(Math.random()<Math.min(.2,.008*(lv-1)))m*=1.35;return w*m}
+function rpgPullMul(){var r=store.rpg||{};return 1-Math.min(.25,.008*(rpgLv()-1))-.02*(r.rod||0)}
+function rpgReel(){var r=store.rpg||{};return 1+.12*(r.reel||0)}
+function rpgLineTol(){var r=store.rpg||{};return .12*(r.line||0)}
+function rpgNetMul(){var r=store.rpg||{};return 1+.15*(r.net||0)}
+function rpgCap(){var r=store.rpg||{};return [60,90,130,180][r.cool||0]||60}
+function rpgStaMul(){return 1-Math.min(.2,.007*(rpgLv()-1))}
+function fishPrice(f){var sp=SPECIES[f.k]||SPECIES.aori;return Math.max(3,Math.round(f.w/10*sp.mult*1.5*rpgSell())+5)}
+function gearShopHtml(r){
+  var h='';
+  GEARS.forEach(function(g){
+    h+='<h3 style="font-size:15px;margin:10px 0 2px">'+g.t+'</h3>';
+    g.L.forEach(function(x,i){
+      if(!i)return;
+      var own=r[g.k]>=i,can=r[g.k]===i-1,lock=r.lv<x.lv;
+      h+='<div class="vrow"><span>'+x.n+'<small>'+x.d+(own?'':(lock?' / Lv.'+x.lv+'で解放':(can?'':' / 前の段階が必要')))+'</small></span>'+
+        (own?'<small>'+(r[g.k]===i?'そうび中':'もっている')+'</small>':'<button class="vb" data-v="buyGear" data-id="'+g.k+':'+i+'" type="button"'+((!can||lock||r.coin<x.price)?' disabled style="opacity:.5"':'')+'>'+x.price+'</button>')+'</div>';
+    });
+  });
+  return h+'<p class="fine" style="font-size:12px;color:#8a6b4a">下の段階から順に買えます。レベルが上がると、よい道具が買えるようになります。</p>';
+}
+function gearBagHtml(r){
+  var lv=r.lv,h='';
+  GEARS.forEach(function(g){var x=g.L[r[g.k]||0];h+='<div class="vrow"><span>'+g.t+'<small>'+x.n+(x.d?'('+x.d+')':'')+'</small></span></div>'});
+  h+='<div class="vrow"><span>レベルの恩恵<small>売値 +'+Math.round((rpgSell()-1)*100)+'% / 大物運 +'+Math.round(Math.min(.3,.01*(lv-1))*100)+'%(大物の確率 '+Math.round(Math.min(.2,.008*(lv-1))*100)+'%) / ファイトが楽 '+Math.round((1-rpgPullMul())*100)+'% / 体力の減り -'+Math.round((1-rpgStaMul())*100)+'% / 体力の上限 '+(100+Math.floor((lv-1)*1.5))+'</small></span></div>';
+  return h;
+}
 function rpgGainXp(n){
   var r=rpgInit(),before=r.lv;r.xp+=n;var L=rpgLvOf(r.xp);r.lv=L.lv;
   return r.lv>before?r.lv:0;
@@ -3441,7 +3474,7 @@ function rpgGainXp(n){
 function rpgCatch(s,key,pts){
   try{
     var r=rpgInit();
-    if(r.fish.length>=60){var lo=0;r.fish.forEach(function(f,i){if(fishPrice(f)<fishPrice(r.fish[lo]))lo=i});r.coin+=fishPrice(r.fish[lo]);r.fish.splice(lo,1)}
+    if(r.fish.length>=rpgCap()){var lo=0;r.fish.forEach(function(f,i){if(fishPrice(f)<fishPrice(r.fish[lo]))lo=i});r.coin+=fishPrice(r.fish[lo]);r.fish.splice(lo,1)}
     r.fish.push({k:key,w:s.w});
     var up=rpgGainXp(Math.max(1,pts));
     if(up)setTimeout(function(){toast('レベルアップ! Lv.'+up+' (島の村で確認できます)','good',2800)},1900);
@@ -3873,11 +3906,7 @@ function openShop(tab){
       body+='<div class="vrow"><span>'+SPECIES[o.f.k].name+' '+o.f.w+'g<small>'+fishPrice(o.f)+'コイン</small></span><button class="vb" data-v="sell" data-id="'+o.i+'" type="button">売る</button></div>';
     });
   }else if(shopTab==='tools'){
-    body='<h3 style="font-size:15px">竿</h3>';
-    RODS.forEach(function(x,i){if(!i)return;var own=r.rod>=i,can=r.rod===i-1;body+='<div class="vrow"><span>'+x.n+'<small>'+x.d+'</small></span>'+(own?'<small>'+(r.rod===i?'そうび中':'もっている')+'</small>':'<button class="vb" data-v="buyRod" data-id="'+i+'" type="button"'+((!can||r.coin<x.price)?' disabled':'')+'>'+x.price+'</button>')+'</div>'});
-    body+='<h3 style="font-size:15px;margin-top:10px">お守り</h3>';
-    CHARMS.forEach(function(x,i){if(!i)return;var own=r.charm>=i,can=r.charm===i-1;body+='<div class="vrow"><span>'+x.n+'<small>'+x.d+'</small></span>'+(own?'<small>'+(r.charm===i?'そうび中':'もっている')+'</small>':'<button class="vb" data-v="buyCharm" data-id="'+i+'" type="button"'+((!can||r.coin<x.price)?' disabled':'')+'>'+x.price+'</button>')+'</div>'});
-    body+='<p class="fine" style="font-size:12px;color:#8a6b4a">下の段階から順に買えます。</p>';
+    body=gearShopHtml(r);
   }else{
     Object.keys(FURN).forEach(function(k){var f=FURN[k];body+='<div class="vrow"><span>'+f.name+'<small>もっている: '+(r.furn[k]||0)+'</small></span><button class="vb" data-v="buyFurn" data-id="'+k+'" type="button"'+(r.coin<f.price?' disabled':'')+'>'+f.price+'</button></div>'});
   }
@@ -3886,7 +3915,7 @@ function openShop(tab){
 function openBag(tab){
   bagTab=tab||bagTab;var r=rpgInit(),L=rpgLvOf(r.xp),rb=rpgRod();
   var st='<div class="vrow"><span><b>Lv.'+r.lv+'</b>'+(L.max?'(最大)':'<small>次のレベルまで '+(L.need-L.cur)+' XP</small>')+'</span></div><div class="vbar"><i style="width:'+(L.max?100:Math.round(L.cur/L.need*100))+'%"></i></div>'+
-    '<div class="vrow"><span>竿<small>'+RODS[r.rod].n+'(飛距離 +'+rb.max+'m)</small></span></div><div class="vrow"><span>お守り<small>'+CHARMS[r.charm].n+'(活性 +'+Math.round((rpgAct()-1)*100)+'%)</small></span></div>'+
+    gearBagHtml(r)+
     '<div class="vrow"><span>クーラー<small>'+r.fish.length+'匹</small></span><button class="vb" data-v="toShop" type="button">お店へ</button></div>';
   var fu='<h3 style="font-size:15px;margin-top:12px">家具(おく)</h3>';
   var any=false;Object.keys(FURN).forEach(function(k){if(r.furn[k]>0){any=true;fu+='<div class="vrow"><span>'+FURN[k].name+' ×'+r.furn[k]+'</span><button class="vb go" data-v="place" data-id="'+k+'" type="button">目の前におく</button></div>'}});
@@ -3918,6 +3947,7 @@ var VACT={
   sell:function(id){var r=rpgInit(),f=r.fish[+id];if(!f)return;r.coin+=fishPrice(f);r.fish.splice(+id,1);save();vilHud();openShop()},
   sellAll:function(){var r=rpgInit(),t=0;r.fish.forEach(function(f){t+=fishPrice(f)});r.coin+=t;r.fish=[];save();vilHud();openShop();vToast('+'+t+' コイン')},
   buyRod:function(id){var r=rpgInit(),i=+id;if(r.rod===i-1&&r.coin>=RODS[i].price){r.coin-=RODS[i].price;r.rod=i;save();vilHud();openShop();vToast(RODS[i].n+'を手に入れた!')}},
+  buyGear:function(id){var q=String(id).split(':'),k=q[0],i=+q[1],r=rpgInit(),g=GEARS.filter(function(x){return x.k===k})[0];if(!g)return;var x=g.L[i];if(!x||r[k]!==i-1||r.lv<x.lv||r.coin<x.price)return;r.coin-=x.price;r[k]=i;save();vilHud();openShop();vToast(x.n+'を手に入れた!')},
   buyCharm:function(id){var r=rpgInit(),i=+id;if(r.charm===i-1&&r.coin>=CHARMS[i].price){r.coin-=CHARMS[i].price;r.charm=i;save();vilHud();openShop();vToast(CHARMS[i].n+'を手に入れた!')}},
   buyFurn:function(id){var r=rpgInit(),f=FURN[id];if(r.coin>=f.price){r.coin-=f.price;r.furn[id]=(r.furn[id]||0)+1;save();vilHud();openShop()}},
   place:function(id){vilPlace(id)},
@@ -4570,7 +4600,7 @@ function staSet(v){var r=rpgInit();r.sta=Math.max(0,Math.min(staMax(),v));return
 var STA={warn:false,sv:0};
 function staDrain(dt){
   if(!staOn())return;
-  var r=rpgInit(),s=staSet(staGet()-dt*.08);
+  var r=rpgInit(),s=staSet(staGet()-dt*.08*rpgStaMul());
   if(s>30)STA.warn=false;
   else if(s<=25&&!STA.warn){STA.warn=true;toast('体力が減ってきた。「食べる」でごはんを食べよう','warn',3200)}
   if((STA.sv=(STA.sv||0)+dt)>5){STA.sv=0;save()}
