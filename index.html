@@ -212,7 +212,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 2.0</p>
+        <p class="eyebrow">テスト版 2.1</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -3231,7 +3231,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='2.0';
+var VER='2.1';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -3244,7 +3244,7 @@ function ovClose(){
 }
 var HELP=[
   {t:'ゲームの流れ',b:['ポイントと立ち位置を選び、道具(エギの号数・カラー)を決めたら、4分間の釣りが始まります。','ゲームの中では時間が10倍の速さで進みます。潮もマズメ(朝夕の薄暗い時間)も、刻々と変わります。','4分間で釣れたイカの重さが点数になります。']},
-  {t:'島の村(RPG)',b:['メニューの「島の村へ」から、どうぶつの島に行けます。スティックで歩き、近づくと出るボタンで話したり入ったりします。','釣った魚はクーラーに入ります。村人のお願い事に使ったり、お店で売ってコインにできます。','コインで竿やお守りを買うと、遠くまで飛ばせて、イカの活性も上がります。釣るとレベルも上がります。','家具を買って島にならべたり、家で自分のすがたを変えたりできます。釣りに行くには、島の下の桟橋へ。']},
+  {t:'島の村(RPG)',b:['メニューの「島の村へ」から、どうぶつの島に行けます。スティックで歩き、近づくと出るボタンで話したり入ったりします。','釣った魚はクーラーに入ります。村人のお願い事に使ったり、お店で売ってコインにできます。','コインで竿やお守りを買うと、遠くまで飛ばせて、イカの活性も上がります。釣るとレベルも上がります。','家具を買って島にならべたり、家に入って着がえたり釣果の棚を見たりできます。釣りに行くには、島の下の桟橋へ。']},
   {t:'狙って投げる',b:['画面の海面をタップすると、狙う位置が決まります。遠いほど画面の上のほうです。','下のキャストボタンで投げます。','「3D自分目線」でジャイロをONにすると、スマホを向けた方向と距離へ投げられます(画面中央のリングが着水点)。']},
   {t:'沈めて、シャクる',b:['着水したらカウントを見て、狙いの深さまで沈めます。','シャクると、タップ1回、続けて2回(ツーピッチ)、押し続け(ロング)の3種類が使えます。','イカが抱くのは、たいていシャクったあとのフォール中です。']},
   {t:'アタリ・ヒット・タモ入れ',b:['アタリが出たら、すぐシャクって合わせます。ラインの目印が止まって震えたらアタリです。','足元までイカがついてきたら、巻くのを止めてエギを落とすと抱きます。','ヒットしたら巻きます。イカが走る時は手を止め、張りすぎるとライン切れ、緩めすぎるとバレます。','寄せたらタモ入れ。緑の位置でタップします。']},
@@ -3617,6 +3617,7 @@ function walkable(x,z){
   return false;
 }
 function blockedAt(x,z,rad){
+  if(V.inB){var R=V.room;if(Math.abs(x-R.cx)>R.hw-.6||z<-R.hd+.6||z>R.hd-.4)return true;for(var j=0;j<V.rcols.length;j++){var d=V.rcols[j];if(Math.hypot(x-d.x,z-d.z)<d.r+rad-.2)return true}return false}
   if(!walkable(x,z))return true;
   for(var i=0;i<V.cols.length;i++){var c=V.cols[i];if(Math.hypot(x-c.x,z-c.z)<c.r+rad)return true}
   return false;
@@ -3716,12 +3717,18 @@ function vilBuild(){
   // 置いた家具
   r0.placed.forEach(function(p){vilAddPlaced(p)});
   V.cam.position.set(V.pl.x,14,V.pl.z+18);
+  V.headLight=new THREE.PointLight(0xfff0c8,0,22,1.3);V.scene.add(V.headLight);
+  vilBuildRoom();
   V.ready=true;
 }
 function vilAvatar(){
   var W=V.world,a=store.rpg.avatar;
   if(V.plG){W.remove(V.plG)}
   var g=mkAnimal(a.sp,RPG_COL[a.col]||RPG_COL[0],{scale:1});
+  var hl=new THREE.Group();
+  hl.add(vMesh(vCyl(),vMat('#5a4a40'),0,.3,0,.66,.07,.6));
+  hl.add(vMesh(vSphere(),new THREE.MeshBasicMaterial({color:0xfff3b0}),0,.34,.6,.15,.12,.1));
+  g.userData.head.add(hl);V.hl=hl;hl.visible=(V.night||0)>.3;
   g.position.set(V.pl.x,.6,V.pl.z);g.rotation.y=V.pl.ry;W.add(g);V.plG=g;
 }
 function vilAddPlaced(p){
@@ -3744,6 +3751,8 @@ function vilTime(){
   V.lamps.forEach(function(m){m.emissive.setRGB(1*em,.85*em,.4*em)});
   V.stars.material.opacity=night>.5?(night-.5)*2:0;
   V.hour=h;V.night=night;
+  if(V.hl)V.hl.visible=night>.3;
+  if(V.inB){var ic=new THREE.Color('#3b2d24');V.scene.background=ic;V.scene.fog.color.copy(ic);V.hemi.intensity=.8;V.sun.intensity=.3}
 }
 
 /* ---- UI・操作・ループ ---- */
@@ -3909,6 +3918,7 @@ var VACT={
 };
 function vilPlace(id){
   var r=rpgInit();if(!(r.furn[id]>0))return;
+  if(V.inB){vOvClose();vToast('家具は外の島におけるよ');return}
   var x=V.pl.x+Math.sin(V.pl.ry)*2.4,z=V.pl.z+Math.cos(V.pl.ry)*2.4;
   x=Math.round(x*2)/2;z=Math.round(z*2)/2;
   if(blockedAt(x,z,FURN[id].r)||Math.hypot(x-V.pl.x,z-V.pl.z)<FURN[id].r+.4){vOvClose();vToast('ここにはおけないよ。向きを変えてみよう');return}
@@ -3939,7 +3949,11 @@ function vilAction(){
   vBlip(520,700);
   if(n.type==='npc')talkNpc(n.npc.d);
   else if(n.type==='shop')openShop('sell');
-  else if(n.type==='home')openHouse();
+  else if(n.type==='home')enterHouse();
+  else if(n.type==='exit')leaveHouse();
+  else if(n.type==='ward')openHouse();
+  else if(n.type==='shelf')openTrophy();
+  else if(n.type==='bed')vSay('ベッド',['ふかふかのベッドだ…。','ぐっすりねむって、あしたも釣りがんばろう!']);
   else if(n.type==='dock')vSay('桟橋',['ここから釣りに出かけられるよ。','どのポイントにする?'],{choices:[{t:'釣りに出かける',fn:function(){vSayEnd();leaveVillage('menu')}},{t:'やめる'}]});
   else if(n.type==='furn')vilPick(n.o);
 }
@@ -3956,6 +3970,12 @@ function vilHud(){
 function vilNearest(){
   var p=V.pl,best=null;
   function cand(d,o){if(!best||d<best.d)best=Object.assign({d:d},o)}
+  if(V.inB){var R=V.room;
+    var de=Math.hypot(R.cx-p.x,R.hd-p.z);if(de<1.9)cand(de,{type:'exit',label:'そとに出る'});
+    var dw=Math.hypot(R.cx-2.3-p.x,1.0-p.z);if(dw<1.7)cand(dw,{type:'ward',label:'着がえる'});
+    var ds2=Math.hypot(R.cx-p.x,-2.1-p.z);if(ds2<1.7)cand(ds2,{type:'shelf',label:'つり果の棚'});
+    var db=Math.hypot(R.cx-1.4-p.x,-1.6-p.z);if(db<1.4)cand(db,{type:'bed',label:'ベッドを見る'});
+    return best}
   V.npcs.forEach(function(n){var d=Math.hypot(n.x-p.x,n.z-p.z);if(d<2.8)cand(d,{type:'npc',npc:n,label:n.d.name+'と話す'})});
   var ds=Math.hypot(VPOS.shop.x-p.x,VPOS.shop.z+4.3-p.z);if(ds<3)cand(ds+.5,{type:'shop',label:'お店に入る'});
   var dh=Math.hypot(VPOS.home.x-p.x,VPOS.home.z+4.0-p.z);if(dh<3)cand(dh+.5,{type:'home',label:'家に入る'});
@@ -3994,9 +4014,13 @@ function vilUpdate(dt){
     n.g.position.set(n.x,.6,n.z);n.g.rotation.y=n.ry;animateAnimal(n.g,'',V.t+n.hx,n.moving,talkingTo);
   });
   // カメラ
+  if(V.inB){V.cam.position.set(V.room.cx,11,p.z*.35+11.5);V.cam.lookAt(V.room.cx,.6,p.z*.35-.4)}
+  else{
   var tx=p.x,tz=p.z+18;
   V.cam.position.x+=(tx-V.cam.position.x)*Math.min(1,dt*5);V.cam.position.z+=(tz-V.cam.position.z)*Math.min(1,dt*5);V.cam.position.y=14;
   V.cam.lookAt(V.cam.position.x,1.2,V.cam.position.z-18+2.5);
+  }
+  if(V.headLight){var nl=V.inB?0:Math.max(0,((V.night||0)-.25)/.75);V.headLight.intensity=1.7*nl;V.headLight.position.set(p.x+Math.sin(p.ry)*.8,3.4,p.z+Math.cos(p.ry)*.8)}
   // 演出
   V.foam.material.opacity=.4+.2*Math.sin(V.t*1.4);V.foam2.material.opacity=.18+.1*Math.sin(V.t*1.4+1.5);
   V.clouds.forEach(function(c){c.position.x+=dt*1.2;if(c.position.x>240)c.position.x=-240});
@@ -4038,9 +4062,89 @@ function enterVillage(){
 }
 function leaveVillage(to){
   V.run=false;cancelAnimationFrame(V.raf);vOvClose();
+  if(V.inB)setInside(false,true);
   if(DL.on){DL.on=false;V.talking=false;$('#vDlg').hidden=true}
   var r=rpgInit();r.pos={x:Math.round(V.pl.x*10)/10,z:Math.round(V.pl.z*10)/10};save();
   show(to||'menu');if(to==='menu')renderRecords();
+}
+
+/* ---- v2.1: 家の中 ---- */
+V.inB=false;V.rcols=[];V.room={cx:800,hw:3.8,hd:3.7};
+function vilBuildRoom(){
+  var R=V.room,G=new THREE.Group();G.position.set(R.cx,0,0);V.world.add(G);V.roomG=G;
+  var wall=vMat('#fff1d6'),wood=vMat('#d9b383'),dk=vMat('#8a5a3a');
+  G.add(vMesh(vBox(),wood,0,-.1,0,R.hw*2+.4,.2,R.hd*2+.4));
+  for(var i=-3;i<=3;i++)G.add(vMesh(vBox(),vMat('#c9a06e'),i*1.1,.005,0,.04,.01,R.hd*2));
+  G.add(vMesh(vBox(),wall,0,2.2,-R.hd-.1,R.hw*2+.4,4.4,.2));
+  G.add(vMesh(vBox(),wall,-R.hw-.1,2.2,0,.2,4.4,R.hd*2+.4));
+  G.add(vMesh(vBox(),wall,R.hw+.1,2.2,0,.2,4.4,R.hd*2+.4));
+  G.add(vMesh(vBox(),dk,0,.25,-R.hd+.02,R.hw*2,.5,.06));
+  G.add(vMesh(vBox(),dk,-R.hw+.02,.25,0,.06,.5,R.hd*2));
+  G.add(vMesh(vBox(),dk,R.hw-.02,.25,0,.06,.5,R.hd*2));
+  // 窓
+  var gl=vMat('#bfe6f5',{emissive:new THREE.Color(0x335566)});
+  G.add(vMesh(vBox(),gl,2.4,2.4,-R.hd+.03,1.6,1.4,.08));
+  G.add(vMesh(vBox(),vMat('#fffaf0'),2.4,2.4,-R.hd+.07,1.8,.1,.05));G.add(vMesh(vBox(),vMat('#fffaf0'),2.4,2.4,-R.hd+.07,.1,1.6,.05));
+  // ラグ
+  var rug=vMesh(vCyl(),vMat('#e58b8b'),0,.02,.4,1.9,.03,1.9);G.add(rug);G.add(vMesh(vCyl(),vMat('#fff1d6'),0,.04,.4,1.3,.03,1.3));
+  // ベッド
+  G.add(vMesh(vBox(),dk,-2.7,.3,-1.9,1.8,.6,3.0));G.add(vMesh(vBox(),vMat('#8fb8e0'),-2.7,.68,-1.6,1.7,.2,2.3));G.add(vMesh(vBox(),vMat('#fffaf0'),-2.7,.72,-3.0,1.3,.2,.6));
+  // 着がえ用ミラー(ついたて)
+  G.add(vMesh(vBox(),dk,-3.4,1.4,1.0,.12,2.8,1.4));G.add(vMesh(vBox(),vMat('#dff2ff',{emissive:new THREE.Color(0x223344)}),-3.33,1.5,1.0,.04,2.2,1.0));
+  // 棚(つり果)
+  G.add(vMesh(vBox(),dk,0,1.2,-R.hd+.3,3.0,2.4,.5));
+  G.add(vMesh(vBox(),vMat('#e8d2a8'),0,1.2,-R.hd+.56,2.7,2.1,.06));
+  [.55,1.2,1.85].forEach(function(y){G.add(vMesh(vBox(),dk,0,y,-R.hd+.5,2.8,.08,.5))});
+  V.trophyG=new THREE.Group();G.add(V.trophyG);
+  // テーブル+いす
+  G.add(vMesh(vCyl(),vMat('#c89a62'),2.5,.8,.2,.9,.1,.9));G.add(vMesh(vCyl(),dk,2.5,.4,.2,.14,.8,.14));
+  G.add(vMesh(vCyl(),vMat('#c24a4a'),2.5,.97,.2,.28,.12,.28));
+  [[1.5,.2],[3.1,1.0]].forEach(function(s){G.add(vMesh(vCyl(),vMat('#b07a4a'),s[0],.35,s[1],.3,.7,.3))});
+  // 観葉植物
+  G.add(vMesh(vCyl(),vMat('#d98a5f'),3.0,.35,-2.7,.35,.7,.35));G.add(vMesh(vSphere(),vMat('#5faa6a'),3.0,1.2,-2.7,.6,.7,.6));G.add(vMesh(vSphere(),vMat('#7cc27a'),3.2,1.7,-2.6,.4,.45,.4));
+  // 出入口マット+ラベル
+  G.add(vMesh(vBox(),vMat('#8a5a3a'),0,.03,R.hd-.15,1.6,.05,.5));
+  var lb=vLabel('マイハウス',2.4,.6,30);lb.position.set(0,3.6,-R.hd+.8);G.add(lb);
+  // ライト
+  var pl=new THREE.PointLight(0xffd9a0,.55,24,1.2);pl.position.set(0,3.4,0);G.add(pl);
+  // 当たり
+  V.rcols=[{x:R.cx-2.7,z:-2.9,r:.9},{x:R.cx-2.7,z:-1.4,r:.9},{x:R.cx-2.9,z:1.0,r:.7},{x:R.cx-.8,z:-3.1,r:.6},{x:R.cx+.8,z:-3.1,r:.6},{x:R.cx+2.5,z:.2,r:1.0},{x:R.cx+3.0,z:-2.7,r:.5}];
+}
+var FISHCOL={aori:'#e9b8a6',kou:'#c9a77a',gashira:'#d9604a',yari:'#cfd8e8'};
+function roomTrophies(){
+  var T=V.trophyG;while(T.children.length)T.remove(T.children[0]);
+  var r=rpgInit(),keys=Object.keys(store.dex||{}).filter(function(k){return SPECIES[k]&&store.dex[k].n>0});
+  keys.slice(0,4).forEach(function(k,i){
+    var x=-.95+(i%2)*1.9,y=i<2?.65:1.3,z=-V.room.hd+.55,c=vMat(FISHCOL[k]||'#9fb8d6');
+    var f=new THREE.Group();f.add(vMesh(vSphere(),c,0,.14,0,.5,.16,.14));
+    var tl=vMesh(vCone(),c,-.5,.14,0,.18,.3,.1);tl.rotation.z=Math.PI/2;f.add(tl);
+    f.add(vMesh(vSphere(),vMat('#1e1a1a'),.3,.2,.1,.03,.03,.03));
+    f.position.set(x,y,z);T.add(f);
+  });
+  if(r.quests.q8==='done'){var cup=new THREE.Group();cup.add(vMesh(vCyl(),vMat('#f2c14e'),0,.12,0,.2,.24,.2));cup.add(vMesh(vSphere(),vMat('#f2c14e'),0,.4,0,.3,.26,.3));cup.position.set(0,1.99,-V.room.hd+.55);T.add(cup)}
+}
+function vFadeDo(mid,end){
+  var f=$('#vFade');if(!f){f=document.createElement('div');f.id='vFade';f.style.cssText='position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .22s;z-index:25';$('#s-village').appendChild(f)}
+  V.modal=true;f.style.opacity=1;
+  setTimeout(function(){mid();f.style.opacity=0;setTimeout(function(){V.modal=false;if(end)end()},240)},260);
+}
+function setInside(b,instant){
+  var R=V.room;
+  if(b){V.inB=true;V.pl.x=R.cx;V.pl.z=R.hd-.8;V.pl.ry=Math.PI;roomTrophies()}
+  else{V.inB=false;V.pl.x=VPOS.home.x;V.pl.z=VPOS.home.z+7.4;V.pl.ry=0}
+  V.joy.x=V.joy.y=0;
+  V.plG.position.set(V.pl.x,.6,V.pl.z);V.plG.rotation.y=V.pl.ry;
+  if(!b)V.cam.position.set(V.pl.x,14,V.pl.z+18);
+  V.nearest=null;$('#vAct').hidden=true;vilTime();
+}
+function enterHouse(){if(V.modal||V.talking)return;vFadeDo(function(){setInside(true)})}
+function leaveHouse(){if(V.modal||V.talking)return;vFadeDo(function(){setInside(false)})}
+function openTrophy(){
+  var r=rpgInit(),html='<h3>つり果の棚</h3>',ks=Object.keys(store.dex||{}).filter(function(k){return SPECIES[k]&&store.dex[k].n>0});
+  if(!ks.length)html+='<p style="font-size:13px">まだ何も釣っていません。釣った魚の記録がここにかざられます。</p>';
+  ks.forEach(function(k){var d=store.dex[k];html+='<div class="vrow"><span><b>'+SPECIES[k].name+'</b><small>さいだい '+d.max+'g / '+d.n+'匹</small></span></div>'});
+  if(r.quests.q8==='done')html+='<p style="font-size:13px;margin-top:8px">🏆 島の釣り名人のトロフィー</p>';
+  vOv(html+'<button class="vb" data-v="close" type="button" style="width:100%;margin-top:10px">とじる</button>');
 }
 
 /* ---------- ループとHUD ---------- */
