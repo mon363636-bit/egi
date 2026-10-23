@@ -212,7 +212,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 2.2</p>
+        <p class="eyebrow">テスト版 2.3</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで4分間で何点釣れるかを競います。ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -3231,7 +3231,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='2.2';
+var VER='2.3';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -3495,7 +3495,7 @@ function vLabel(txt,w,h,fs,bg,fg){
   var c=document.createElement('canvas');c.width=256;c.height=64;var x=c.getContext('2d');
   x.fillStyle=bg||'rgba(255,248,230,.92)';var r=22;x.beginPath();x.moveTo(r,4);x.lineTo(256-r,4);x.quadraticCurveTo(252,4,252,r);x.lineTo(252,64-r);x.quadraticCurveTo(252,60,256-r,60);x.lineTo(r,60);x.quadraticCurveTo(4,60,4,64-r);x.lineTo(4,r);x.quadraticCurveTo(4,4,r,4);x.fill();
   x.fillStyle=fg||'#5a3d24';x.font='bold '+(fs||30)+'px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,128,34);
-  var t=new THREE.CanvasTexture(c);var s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false}));s.scale.set(w||2.4,h||.6,1);return s;
+  var t=new THREE.CanvasTexture(c);var s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false}));s.scale.set(w||2.4,h||.6,1);s.renderOrder=20;return s;
 }
 function addTo(g,m){g.add(m);return m}
 function shade(hex,k){var c=new THREE.Color(hex);c.multiplyScalar(k);return c}
@@ -3545,7 +3545,7 @@ function mkAnimal(sp,colHex,o){
   }
   if(!isPen){[-1,1].forEach(function(s){var a=vMesh(vSphere(),body,s*.62,.85,.05,.14,.3,.14);a.rotation.z=-s*.25;g.add(a);parts['arm'+(s<0?'L':'R')]=a})}
   [-1,1].forEach(function(s){var f=vMesh(vSphere(),isPen?vMat('#f2a03a'):dark,s*.25,.12,.08,.2,.14,.3);g.add(f);parts['foot'+(s<0?'L':'R')]=f});
-  var sh=vMesh(vCyl(),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,depthWrite:false}),0,.04,0,.75,.01,.6);g.add(sh);
+  var sh=vMesh(vCyl(),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),0,.04,0,.75,.01,.6);g.add(sh);
   g.userData=parts;
   g.scale.setScalar(o.scale||1);
   return g;
@@ -3569,7 +3569,7 @@ function mkTree(x,z,kind,s){
     var c=vMat(cols[Math.floor(h*4)%4]);
     g.add(vMesh(vSphere(),c,0,3*s,0,1.5*s,1.35*s,1.5*s));g.add(vMesh(vSphere(),c,.8*s,2.5*s,.3*s,1*s,.9*s,1*s));g.add(vMesh(vSphere(),c,-.7*s,2.6*s,-.2*s,1*s,.95*s,1*s));
   }
-  g.add(vMesh(vCyl(),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.18,depthWrite:false}),0,.04,0,1.4*s,.01,1.4*s));
+  g.add(vMesh(vCyl(),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.18,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),0,.04,0,1.4*s,.01,1.4*s));
   g.position.set(x,.6,z);return g;
 }
 function mkBuilding(w,h,d,wall,roof,label,win){
@@ -3608,7 +3608,7 @@ function ringStrip(fn,w,y,color,op){
   var N=96,pos=new Float32Array((N+1)*2*3),idx=[];
   for(var i=0;i<=N;i++){var a=i/N*Math.PI*2,r=fn(a);pos[i*6]=Math.cos(a)*r;pos[i*6+1]=y;pos[i*6+2]=Math.sin(a)*r;pos[i*6+3]=Math.cos(a)*(r+w);pos[i*6+4]=y;pos[i*6+5]=Math.sin(a)*(r+w);if(i<N){var k=i*2;idx.push(k,k+1,k+2,k+1,k+3,k+2)}}
   var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setIndex(idx);
-  var m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:op,depthWrite:false,side:THREE.DoubleSide}));return m;
+  var m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:op,depthWrite:false,side:THREE.DoubleSide}));m.renderOrder=3;return m;
 }
 function walkable(x,z){
   var a=Math.atan2(z,x),r=Math.hypot(x,z);
@@ -3625,19 +3625,19 @@ function blockedAt(x,z,rad){
 }
 function addCol(x,z,r,tag){var c={x:x,z:z,r:r,tag:tag};V.cols.push(c);return c}
 function pathSeg(g,x1,z1,x2,z2,w){
-  var len=Math.hypot(x2-x1,z2-z1),m=vMesh(vBox(),vMat('#ecd9a8'),(x1+x2)/2,.63,(z1+z2)/2,w,.04,len);m.rotation.y=Math.atan2(x2-x1,z2-z1);g.add(m);
+  var len=Math.hypot(x2-x1,z2-z1),m=vMesh(vBox(),vMat('#ecd9a8',{polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),(x1+x2)/2,.63,(z1+z2)/2,w,.04,len);m.rotation.y=Math.atan2(x2-x1,z2-z1);g.add(m);
 }
 function vilBuild(){
   var cv=$('#vilCv');
   V.ren=new THREE.WebGLRenderer({canvas:cv,antialias:true});
   V.ren.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
   V.scene=new THREE.Scene();V.scene.fog=new THREE.Fog(0xcfe9f2,60,220);
-  V.cam=new THREE.PerspectiveCamera(50,1,.5,700);
+  V.cam=new THREE.PerspectiveCamera(50,1,3,900);
   V.hemi=new THREE.HemisphereLight(0xdff2ff,0x9fc88a,1);V.scene.add(V.hemi);
   V.sun=new THREE.DirectionalLight(0xfff2d0,.9);V.sun.position.set(-30,50,20);V.scene.add(V.sun);
   var W=new THREE.Group();V.scene.add(W);V.world=W;
   // 海
-  var sea=new THREE.Mesh(new THREE.CircleGeometry(1000,48),new THREE.MeshLambertMaterial({color:0x5fc2d8,transparent:true,opacity:.82}));sea.rotation.x=-Math.PI/2;W.add(sea);V.sea=sea;
+  var sea=new THREE.Mesh(new THREE.CircleGeometry(1000,48),new THREE.MeshLambertMaterial({color:0x5fc2d8,transparent:true,opacity:.82}));sea.rotation.x=-Math.PI/2;sea.material.depthWrite=false;sea.renderOrder=-10;W.add(sea);V.sea=sea;
   // 浅瀬・砂・草
   W.add(new THREE.Mesh(isleGeo(function(a){return sandR(a)+6},-.25,-3,64),new THREE.MeshLambertMaterial({color:0xa5e3de})));
   W.add(new THREE.Mesh(isleGeo(sandR,.45,-2,72),new THREE.MeshLambertMaterial({color:0xf3e2b3})));
@@ -3646,7 +3646,7 @@ function vilBuild(){
   V.foam2=ringStrip(function(a){return sandR(a)+3},1.0,.1,0xffffff,.25);W.add(V.foam2);
   coBuild(W);
   // 広場・道
-  var plaza=vMesh(vCyl(),vMat('#ecd9a8'),0,.63,0,6.5,.04,6.5);W.add(plaza);
+  var plaza=vMesh(vCyl(),vMat('#ecd9a8',{polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),0,.63,0,6.5,.04,6.5);W.add(plaza);
   pathSeg(W,0,0,-13,-8,2.4);pathSeg(W,0,0,15,-8,2.4);pathSeg(W,0,5,0,31,2.6);pathSeg(W,0,0,-18,4,2);pathSeg(W,0,0,9,9,2);
   // 建物
   var shop=mkBuilding(7.5,4.2,5.5,'#fff1d6','#e86a5c','おみせ');shop.position.set(VPOS.shop.x,.6,VPOS.shop.z);W.add(shop);
@@ -4225,7 +4225,7 @@ function coBridge(W){
     for(var i=0;i<P.length-1;i++)coBar(G,wh,s*2.9,P[i][1],P[i][0],P[i+1][1],P[i+1][0],.22);
     for(var k=-5;k<=5;k++){var z=k*L/12;var y=null;
       for(var i=0;i<P.length-1;i++){if(z>=P[i][0]&&z<=P[i+1][0]){y=P[i][1]+(P[i+1][1]-P[i][1])*(z-P[i][0])/(P[i+1][0]-P[i][0])}}
-      if(y>1.6)G.add(vMesh(vBox(),wh,s*2.9,(y+1.2)/2,z,.08,y-1.2,.08));
+      if(y>1.6)G.add(vMesh(vBox(),wh,s*2.9,(y+1.2)/2,z,.16,y-1.2,.16));
     }
   });
 }
@@ -4259,7 +4259,7 @@ function coForest(W){
   function inst(geo,mat,arr,fn){
     var im=new THREE.InstancedMesh(geo,mat,Math.max(1,arr.length)),m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),sc=new THREE.Vector3(),col=new THREE.Color();
     arr.forEach(function(a,i){fn(a,pos,sc,col);m.compose(pos,q,sc);im.setMatrixAt(i,m);im.setColorAt(i,col)});
-    im.count=arr.length;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;W.add(im);return im;
+    im.frustumCulled=false;im.count=arr.length;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;W.add(im);return im;
   }
   var white=function(){return vMat(0xffffff)};
   inst(vCyl(),vMat('#8a5a3a'),cr.concat(pi),function(a,pos,sc,col){var s=a[2];pos.set(a[0],.62+1.1*s,a[1]);sc.set(.28*s,2.2*s,.28*s);col.set('#8a5a3a')});
@@ -4285,8 +4285,8 @@ function coMarkers(W){
   CO_MK.forEach(function(m){
     m.pt=ptById(m.id);
     var g=new THREE.Group();g.position.set(m.x,.68,m.z);W.add(g);
-    var ring=new THREE.Mesh(new THREE.RingGeometry(1.6,2.4,32),new THREE.MeshBasicMaterial({color:0xffd24a,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide}));
-    ring.rotation.x=-Math.PI/2;g.add(ring);
+    var ring=new THREE.Mesh(new THREE.RingGeometry(1.6,2.4,32),new THREE.MeshBasicMaterial({color:0xffd24a,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));
+    ring.renderOrder=5;ring.rotation.x=-Math.PI/2;g.add(ring);
     var ar=vMesh(vCone(),new THREE.MeshBasicMaterial({color:0xffd24a}),0,3.3,0,.55,1.1,.55);ar.rotation.x=Math.PI;g.add(ar);
     var lb=vLabel(m.s,3.6,.9,30);lb.position.set(0,5.2,0);g.add(lb);
     m.ring=ring;m.arrow=ar;
@@ -4294,6 +4294,7 @@ function coMarkers(W){
   CO.mk=CO_MK;
 }
 function coAnimate(t){
+  if(t-(CO.mt||-1)>.1){CO.mt=t;coMapUpdate()}
   CO.mk.forEach(function(m,i){if(!m.arrow)return;m.arrow.position.y=3.3+Math.sin(t*2.6+i)*.3;m.ring.material.opacity=.55+.3*Math.sin(t*3+i)})
 }
 function coScenery(W){
@@ -4347,10 +4348,10 @@ function coScenery(W){
   });
 }
 function openSpots(){
-  var html='<h3>釣り場へ移動</h3><p style="font-size:12px;color:#8a6b4a;margin:0 0 6px">歩いても行けます。「ワープ」で、その釣り場の入口にすぐ移動します。</p>';
+  var html='<h3>全体図・釣り場へ移動</h3><canvas id="vMapBig" width="660" height="486" style="width:100%;display:block;border-radius:12px;border:2px solid #e3c99a;margin-bottom:8px"></canvas><p style="font-size:12px;color:#8a6b4a;margin:0 0 6px">歩いても行けます。「ワープ」で、その釣り場の入口にすぐ移動します。</p>';
   CO_MK.forEach(function(m){html+='<div class="vrow"><span><b>'+m.pt.name+'</b><small>'+m.pt.area+'</small></span><button class="vb go" data-v="warp" data-id="'+m.id+'" type="button">ワープ</button></div>'});
   html+='<button class="vb" data-v="toMenu" type="button" style="width:100%;margin-top:10px">メニューの釣り場一覧へ</button><button class="vb" data-v="close" type="button" style="width:100%;margin-top:8px">とじる</button>';
-  vOv(html);
+  vOv(html);coMapUpdate();
 }
 VACT.warp=function(id){
   var m=CO_MK.filter(function(x){return x.id===id})[0];if(!m)return;
@@ -4358,6 +4359,58 @@ VACT.warp=function(id){
   vFadeDo(function(){V.pl.x=m.x;V.pl.z=m.z+1.2;V.pl.ry=0;V.plG.position.set(V.pl.x,.6,V.pl.z);V.cam.position.set(V.pl.x,14,V.pl.z+18);V.nearest=null;$('#vAct').hidden=true});
 };
 VACT.toMenu=function(){leaveVillage('menu')};
+
+/* ---- v2.3: 全体図(ミニマップ) ---- */
+var MAPB={x0:-228,x1:52,z0:-54,z1:152};
+var MAPLBL={maiko:[0,-9,'c'],nanko:[0,-9,'c'],kishiwada:[9,5,'l'],rinku:[9,5,'l'],kojima:[9,-3,'l'],kada:[-9,8,'r'],saika:[9,6,'l'],iwaya:[-9,0,'r'],sumoto:[-9,0,'r'],yura:[-9,5,'r']};
+function coMapBase(w,h,big){
+  var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');
+  var s=Math.min(w/(MAPB.x1-MAPB.x0),h/(MAPB.z1-MAPB.z0)),ox=(w-(MAPB.x1-MAPB.x0)*s)/2,oz=(h-(MAPB.z1-MAPB.z0)*s)/2;
+  var X=function(wx){return ox+(wx-MAPB.x0)*s},Z=function(wz){return oz+(wz-MAPB.z0)*s};
+  x.fillStyle='#a9dbe8';x.fillRect(0,0,w,h);
+  x.lineCap='round';x.lineJoin='round';
+  function path(P){x.beginPath();P.forEach(function(p,i){i?x.lineTo(X(p[0]),Z(p[1])):x.moveTo(X(p[0]),Z(p[1]))});x.stroke()}
+  function isle(fn,col){x.fillStyle=col;x.beginPath();for(var i=0;i<=72;i++){var a=i/72*Math.PI*2,r=fn(a);i?x.lineTo(X(Math.cos(a)*r),Z(Math.sin(a)*r)):x.moveTo(X(Math.cos(a)*r),Z(Math.sin(a)*r))}x.fill()}
+  x.strokeStyle='#d6ecf0';x.lineWidth=(2*(CO.hw+6))*s;CO_PATHS.forEach(function(P){path(P.p)});
+  x.strokeStyle='#f3e2b3';x.lineWidth=(2*(CO.hw+2.2))*s;CO_PATHS.forEach(function(P){path(P.p)});
+  x.strokeStyle='#8fd47a';x.lineWidth=(2*CO.hw)*s;CO_PATHS.forEach(function(P){path(P.p)});
+  isle(function(a){return sandR(a)+6},'#d6ecf0');isle(sandR,'#f3e2b3');isle(grassR,'#8fd47a');
+  x.strokeStyle='#a98a58';x.lineWidth=Math.max(2,3.2*s);x.lineCap='butt';x.beginPath();x.moveTo(X(0),Z(29));x.lineTo(X(0),Z(51));x.stroke();
+  x.strokeStyle='#8a8478';x.lineWidth=Math.max(2,CO_BR.hw*2*s*.8);x.beginPath();x.moveTo(X(CO_BR.a[0]),Z(CO_BR.a[1]));x.lineTo(X(CO_BR.b[0]),Z(CO_BR.b[1]));x.stroke();
+  var fs=big?Math.round(w/30):0;
+  if(big){x.font='bold '+fs+'px sans-serif';x.textAlign='center';x.lineJoin='round';x.lineWidth=4;
+    [['大阪湾',-110,70,'#5b95ad'],['村',0,0,'#4a7a3a'],['淡路島',-205,45,'#4a7a3a']].forEach(function(t){x.strokeStyle='rgba(255,255,255,.7)';x.fillStyle=t[3];x.strokeText(t[0],X(t[1]),Z(t[2]));x.fillText(t[0],X(t[1]),Z(t[2]))});
+  }
+  CO_MK.forEach(function(m){
+    x.beginPath();x.arc(X(m.x),Z(m.z),big?w/80:w/45,0,7);x.fillStyle='#ffd24a';x.fill();x.lineWidth=big?3:2;x.strokeStyle='#8a5a1a';x.stroke();
+    if(big){var L=MAPLBL[m.id]||[0,-9,'c'];x.font='bold '+fs+'px sans-serif';x.textAlign=L[2]==='l'?'left':L[2]==='r'?'right':'center';x.lineWidth=5;x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#5a3d24';x.strokeText(m.s,X(m.x)+L[0]*w/330,Z(m.z)+L[1]*w/330);x.fillText(m.s,X(m.x)+L[0]*w/330,Z(m.z)+L[1]*w/330)}
+  });
+  return {c:c,X:X,Z:Z,s:s};
+}
+function coMapDraw(cv,key,big){
+  if(!cv)return;
+  var B=CO[key];if(!B||B.w!==cv.width){B=CO[key]=coMapBase(cv.width,cv.height,big);B.w=cv.width}
+  var x=cv.getContext('2d');x.drawImage(B.c,0,0);
+  var p=V.inB?{x:VPOS.home.x,z:VPOS.home.z+4,ry:0}:V.pl,px=B.X(p.x),pz=B.Z(p.z),r=cv.width/(big?36:16);
+  x.save();x.translate(px,pz);
+  x.beginPath();x.arc(0,0,r*1.7,0,7);x.fillStyle='rgba(255,70,70,.25)';x.fill();
+  x.rotate(Math.PI-(p.ry||0));
+  x.beginPath();x.moveTo(0,-r*1.5);x.lineTo(r,r);x.lineTo(0,r*.4);x.lineTo(-r,r);x.closePath();
+  x.fillStyle='#e8392f';x.fill();x.lineWidth=Math.max(2,r*.3);x.strokeStyle='#fff';x.stroke();
+  x.restore();
+  if(big){x.font='bold '+Math.round(cv.width/26)+'px sans-serif';x.textAlign='center';x.lineWidth=5;x.strokeStyle='#fff';x.fillStyle='#e8392f';var ty=pz-r*2.2;x.strokeText('いまここ',px,ty);x.fillText('いまここ',px,ty)}
+}
+function coMapUpdate(){
+  coMapDraw(document.getElementById('vMap'),'mapMini',false);
+  var bg=document.getElementById('vMapBig');if(bg)coMapDraw(bg,'mapBig',true);
+}
+(function(){
+  var sec=document.getElementById('s-village');if(!sec)return;
+  var cv=document.createElement('canvas');cv.id='vMap';cv.width=240;cv.height=177;
+  cv.style.cssText='position:absolute;left:10px;top:calc(54px + env(safe-area-inset-top,0px));width:120px;height:88px;border:2px solid #e3c99a;border-radius:12px;background:#a9dbe8;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:5;cursor:pointer';
+  sec.appendChild(cv);
+  cv.addEventListener('click',function(){if(!V.talking&&!V.modal)openSpots()});
+})();
 
 /* ---------- ループとHUD ---------- */
 var rafId=0,pausedFlag=false;
