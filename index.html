@@ -212,7 +212,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 2.5</p>
+        <p class="eyebrow">テスト版 2.6</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで、体力が続くかぎり何点釣れるかを競います。体力が減ったら、ごはん(コンビニ)かベッドで回復!ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -3233,7 +3233,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='2.5';
+var VER='2.6';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -4648,7 +4648,23 @@ VACT.eatFood=function(id){
   var res=doEat(id);vilHud();openCvs();if(res)vToast(eatMsg(res),1800);
 };
 function vSleep(){
-  vFadeDo(function(){staSet(staMax());STA.warn=false;save();staUpdate();vilHud()},function(){vToast('ぐっすり眠って、体力が全回復した!',3000)});
+  var s0=staGet(),mx=staMax();
+  if(s0>=mx-.5){vToast('まだ眠くないよ。体力はじゅうぶん');return}
+  var sec=document.getElementById('s-village'),ov=document.getElementById('vSleepOv');
+  if(!ov){ov=document.createElement('div');ov.id='vSleepOv';ov.style.cssText='position:absolute;inset:0;z-index:40;background:rgba(5,10,30,.93);color:#cfe0ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px';sec.appendChild(ov)}
+  ov.innerHTML='<div style="font-size:54px">🌙</div><div style="font-size:20px;font-weight:700">ぐっすり ねむっています… Zzz</div><div id="vSlN" style="font-size:16px"></div><div style="width:70%;max-width:300px;height:14px;border-radius:9px;background:#243056;overflow:hidden"><i id="vSlB" style="display:block;height:100%;background:#7fb2ff;width:0"></i></div><div id="vSlT" style="font-size:13px;opacity:.85"></div><button class="vb" id="vSlStop" type="button" style="margin-top:6px">起きる</button>';
+  ov.hidden=false;V.modal=true;
+  var t0=Date.now(),RATE=2,iv=0;
+  function wake(full){clearInterval(iv);ov.hidden=true;V.modal=false;save();vilHud();staUpdate();vToast(full?'ぐっすり眠って、体力が全回復した!':'目をさました。体力 '+Math.ceil(staGet()),2600)}
+  function tick(){
+    var e=(Date.now()-t0)/1000,v=Math.min(mx,s0+e*RATE);staSet(v);staUpdate();
+    var n=document.getElementById('vSlN'),b=document.getElementById('vSlB'),t=document.getElementById('vSlT');
+    if(n)n.textContent='体力 '+Math.ceil(v)+' / '+mx;if(b)b.style.width=Math.round(v/mx*100)+'%';
+    if(t)t.textContent='あと約'+Math.ceil((mx-v)/RATE)+'秒で全回復';
+    if(v>=mx-.01)wake(true);
+  }
+  document.getElementById('vSlStop').onclick=function(){wake(false)};
+  iv=setInterval(tick,200);tick();
 }
 (function(){
   var css=document.createElement('style');
@@ -4864,7 +4880,7 @@ setTimeout(rankInit,0);
 if(!store.settings.seenHelp)setTimeout(helpOpen,500);
 rafId=requestAnimationFrame(loop);
 try{if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}catch(e){}
-if(location.hash==='#debug')window.__egi={NET:NET,netOnMsg:netOnMsg,netBubble:netBubble,staGet:staGet,staSet:staSet,openCvs:openCvs,openEat:openEat,foodHave:foodHave,CHAT:CHAT,update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
+if(location.hash==='#debug')window.__egi={vSleep:vSleep,NET:NET,netOnMsg:netOnMsg,netBubble:netBubble,staGet:staGet,staSet:staSet,openCvs:openCvs,openEat:openEat,foodHave:foodHave,CHAT:CHAT,update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
 })();
 </script>
 
