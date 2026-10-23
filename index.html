@@ -212,7 +212,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 2.4</p>
+        <p class="eyebrow">テスト版 2.5</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで、体力が続くかぎり何点釣れるかを競います。体力が減ったら、ごはん(コンビニ)かベッドで回復!ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -3233,7 +3233,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='2.4';
+var VER='2.5';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -4036,7 +4036,7 @@ function vilUpdate(dt){
   }
   if(V.headLight){var nl=V.inB?0:Math.max(0,((V.night||0)-.25)/.75);V.headLight.intensity=1.7*nl;V.headLight.position.set(p.x+Math.sin(p.ry)*.8,3.4,p.z+Math.cos(p.ry)*.8)}
   // 演出
-  coAnimate(V.t);
+  coAnimate(V.t);if(typeof netTick==='function')netTick(dt);
   V.foam.material.opacity=.4+.2*Math.sin(V.t*1.4);V.foam2.material.opacity=.18+.1*Math.sin(V.t*1.4+1.5);
   V.clouds.forEach(function(c){c.position.x+=dt*1.2;if(c.position.x>360)c.position.x=-440});
   // 近くの対象
@@ -4414,7 +4414,7 @@ function coMapBase(w,h,big){
 function coMapDraw(cv,key,big){
   if(!cv)return;
   var B=CO[key];if(!B||B.w!==cv.width){B=CO[key]=coMapBase(cv.width,cv.height,big);B.w=cv.width}
-  var x=cv.getContext('2d');x.drawImage(B.c,0,0);
+  var x=cv.getContext('2d');x.drawImage(B.c,0,0);if(typeof netDots==='function')netDots(x,B,big,cv.width);
   var p=V.inB?{x:VPOS.home.x,z:VPOS.home.z+4,ry:0}:V.pl,px=B.X(p.x),pz=B.Z(p.z),r=cv.width/(big?36:16);
   x.save();x.translate(px,pz);
   x.beginPath();x.arc(0,0,r*1.7,0,7);x.fillStyle='rgba(255,70,70,.25)';x.fill();
@@ -4440,6 +4440,7 @@ function coMapUpdate(){
 var CHAT={base:'https://ntfy.sh',topic:'egi-oosaka-island-k7q3x9',log:[],seen:{},es:null,t0:Date.now(),sentAt:0,unread:0,retry:0,st:'init',joined:false};
 var CHAT_QUICK=['こんにちは!','釣れた!','ナイス〜','どこ釣れてる?','おつかれ!'];
 function chatPlace(){
+  if(!V.pl)return '村';
   if(V.inB)return '家';
   var best=null,bd=1e9;
   CO_MK.forEach(function(m){var d=Math.hypot(V.pl.x-m.x,V.pl.z-m.z);if(d<bd){bd=d;best=m}});
@@ -4472,6 +4473,7 @@ function chatOnMsg(raw){
   if(live){
     if(!CHAT.open)CHAT.unread++;
     chatFeed();chatBadge();
+    if(typeof netBubble==='function')netBubble(m.n,m.m);
     if(m.n!==chatName())vBlip(880,1040);
   }
   chatRenderLog();
@@ -4499,7 +4501,8 @@ function chatFeed(){
 }
 function chatBadge(){
   var b=document.getElementById('vChatB');if(!b)return;
-  b.textContent='💬 チャット'+(CHAT.unread?' ('+CHAT.unread+')':'')+(CHAT.st==='ng'?' ×':'');
+  var nc=(typeof netCount==='function'&&typeof NET!=='undefined'&&NET.ok)?netCount():0;
+  b.textContent='💬 チャット'+(CHAT.unread?' ('+CHAT.unread+')':'')+(CHAT.st==='ng'?' ×':'')+(nc?' 👥'+(nc+1):'');
 }
 function chatRenderLog(){
   var box=document.getElementById('vChatLog');if(!box)return;
@@ -4520,6 +4523,7 @@ function openChat(){
   if(V.talking||V.modal)return;
   CHAT.open=true;CHAT.unread=0;chatBadge();chatFeed();
   var html='<h3>みんなのチャット</h3><p style="font-size:11px;color:#8a6b4a;margin:0 0 6px">いま遊んでいる人みんなに見える公開チャットです。本名・住所・電話番号は書かないでね。</p>'+
+  '<div id="vWho" style="font-size:12px;color:#2f7a36;margin:0 0 6px">'+(typeof netWho==='function'?netWho():'')+'</div>'+
   '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span style="font-size:12px">なまえ</span><input id="vChatNm" maxlength="10" style="flex:1;min-width:0;padding:6px 8px;border:2px solid #e3c99a;border-radius:10px;font:inherit;font-size:14px;background:#fff"></div>'+
   '<div id="vChatLog" style="height:34vh;min-height:120px;overflow:auto;background:#fffdf5;border:2px solid #e3c99a;border-radius:12px;padding:4px 8px;margin-bottom:6px"></div>'+
   '<div class="vchips" id="vChatQ"></div>'+
@@ -4661,6 +4665,118 @@ function vSleep(){
   staUpdate();
 })();
 
+/* ---- v2.5: ほかの人の姿(公開MQTTブローカー経由・登録不要) ---- */
+var NET={urls:['wss://broker.hivemq.com:8884/mqtt','wss://broker.emqx.io:8084/mqtt'],ui:0,ws:null,st:'init',topic:'egi-oosaka-k7q3x9/p',id:'e'+Math.random().toString(36).slice(2,10),remotes:{},acc:0,lastX:-999,lastZ:-999,retry:0,buf:new Uint8Array(0),ping:0,ok:false};
+function mqStr(s){var b=new TextEncoder().encode(s),o=new Uint8Array(b.length+2);o[0]=b.length>>8;o[1]=b.length&255;o.set(b,2);return o}
+function mqLen(n){var a=[];do{var d=n%128;n=Math.floor(n/128);if(n>0)d|=128;a.push(d)}while(n>0);return a}
+function mqPkt(first,parts){var len=0;parts.forEach(function(p){len+=p.length});var h=[first].concat(mqLen(len)),o=new Uint8Array(h.length+len);o.set(h,0);var k=h.length;parts.forEach(function(p){o.set(p,k);k+=p.length});return o}
+function mqSend(u8){try{if(NET.ws&&NET.ws.readyState===1)NET.ws.send(u8)}catch(e){}}
+function netPublish(o){if(!NET.ok)return;mqSend(mqPkt(0x30,[mqStr(NET.topic),new TextEncoder().encode(JSON.stringify(o))]))}
+function netConnect(){
+  if(NET.ws)return;
+  var ws;
+  try{ws=new WebSocket(NET.urls[NET.ui%NET.urls.length],'mqtt')}catch(e){NET.st='ng';netRetry();return}
+  ws.binaryType='arraybuffer';NET.ws=ws;NET.buf=new Uint8Array(0);NET.ok=false;
+  ws.onopen=function(){mqSend(mqPkt(0x10,[mqStr('MQTT'),new Uint8Array([4,2,0,45]),mqStr('egi-'+NET.id)]))};
+  ws.onmessage=function(e){
+    var nb=new Uint8Array(e.data),b=new Uint8Array(NET.buf.length+nb.length);b.set(NET.buf,0);b.set(nb,NET.buf.length);NET.buf=b;
+    while(NET.buf.length>=2){
+      var i=1,m=1,rl=0,d;
+      do{if(i>=NET.buf.length)return;d=NET.buf[i++];rl+=(d&127)*m;m*=128}while(d&128&&i<5);
+      if(NET.buf.length<i+rl)return;
+      var b0=NET.buf[0],body=NET.buf.slice(i,i+rl);NET.buf=NET.buf.slice(i+rl);
+      var ty=b0>>4;
+      if(ty===2){if(body[1]===0){mqSend(mqPkt(0x82,[new Uint8Array([0,1]),mqStr(NET.topic),new Uint8Array([0])]));NET.ok=true;NET.st='ok';NET.retry=0;netBeat(true);chatBadge()}else{NET.st='ng';try{ws.close()}catch(e){}}}
+      else if(ty===3){
+        var tl=(body[0]<<8)|body[1],pos=2+tl;if((b0>>1)&3)pos+=2;
+        try{netOnMsg(JSON.parse(new TextDecoder().decode(body.slice(pos))))}catch(err){}
+      }
+    }
+  };
+  ws.onclose=function(){NET.ws=null;NET.ok=false;if(NET.st==='ok')NET.st='ng';NET.ui++;chatBadge();netRetry()};
+  ws.onerror=function(){NET.st='ng'};
+}
+function netRetry(){NET.retry++;setTimeout(netConnect,Math.min(60000,3000*NET.retry))}
+function netSelf(){
+  if(!V.pl)return null;
+  var p=V.inB?{x:VPOS.home.x,z:VPOS.home.z+4.2,ry:0}:V.pl,a=(store.rpg&&store.rpg.avatar)||{sp:'cat',col:0};
+  return {i:NET.id,n:chatName(),s:a.sp,c:a.col|0,x:Math.round(p.x*10)/10,z:Math.round(p.z*10)/10,r:Math.round((p.ry||0)*10)/10,m:V.pl.moving?1:0};
+}
+function netBeat(force){
+  var o=netSelf();if(!o)return;
+  NET.lastX=o.x;NET.lastZ=o.z;netPublish(o);
+}
+function netOnMsg(o){
+  if(!o||typeof o!=='object'||o.i===NET.id||typeof o.i!=='string'||o.i.length>16)return;
+  if(o.b){netDrop(o.i);return}
+  var x=+o.x,z=+o.z;if(!isFinite(x)||!isFinite(z)||Math.abs(x)>500||Math.abs(z)>500)return;
+  var r=NET.remotes[o.i];
+  if(!r){
+    if(Object.keys(NET.remotes).length>=14)return;
+    var sp=RPG_SP.filter(function(s){return s.id===o.s})[0]?o.s:'cat';
+    r={id:o.i,sp:sp,c:Math.max(0,Math.min(RPG_COL.length-1,o.c|0)),x:x,z:z,tx:x,tz:z,ry:+o.r||0,g:null,moving:false,bub:null,bt:0};NET.remotes[o.i]=r;
+    toastNew(sanitizeNick(o.n));
+  }
+  r.n=sanitizeNick(o.n)||'名無し';r.tx=x;r.tz=z;r.last=Date.now();r.ry2=+o.r||0;
+  chatBadge();
+}
+function toastNew(n){if(n&&typeof vToast==='function'&&NET.t0&&Date.now()-NET.t0>4000)vToast(n+'さんが近くにいるよ',2200)}
+function netDrop(id){var r=NET.remotes[id];if(!r)return;if(r.g&&V.world)V.world.remove(r.g);delete NET.remotes[id];chatBadge()}
+function netCount(){return Object.keys(NET.remotes).length}
+function netWho(){
+  var ids=Object.keys(NET.remotes);if(!ids.length)return NET.st==='ok'?'いま島にいるのは、あなただけです':'(接続中…)';
+  return 'いま島にいる人: '+ids.map(function(k){var r=NET.remotes[k];return r.n+'('+netPlace(r.x,r.z)+')'}).join('、');
+}
+function netPlace(x,z){
+  var best=null,bd=1e9;CO_MK.forEach(function(m){var d=Math.hypot(x-m.x,z-m.z);if(d<bd){bd=d;best=m}});
+  if(best&&bd<30)return best.s;return Math.hypot(x,z)<70?'村':'海ぞい';
+}
+function netBubble(name,text){
+  Object.keys(NET.remotes).forEach(function(k){
+    var r=NET.remotes[k];if(r.n!==name||!r.g)return;
+    if(r.bub)r.g.remove(r.bub);
+    var t=String(text);if(t.length>10)t=t.slice(0,9)+'…';
+    r.bub=vLabel(t,3.2,.8,26,'rgba(255,255,255,.96)');r.bub.position.set(0,4.1,0);r.g.add(r.bub);r.bt=6;
+  });
+}
+function netTick(dt){
+  if(!NET.t0)NET.t0=Date.now();
+  var now=Date.now();
+  Object.keys(NET.remotes).forEach(function(k){
+    var r=NET.remotes[k];
+    if(now-r.last>45000){netDrop(k);return}
+    if(!r.g&&V.world){
+      r.g=mkAnimal(r.sp,RPG_COL[r.c]||RPG_COL[0],{scale:1});
+      var lb=vLabel(r.n,2.0,.5,26,'rgba(214,236,255,.95)');lb.position.set(0,3.0,0);r.g.add(lb);r.lb=lb;r.lbn=r.n;
+      r.g.position.set(r.x,.6,r.z);V.world.add(r.g);
+    }
+    if(!r.g)return;
+    var dx=r.tx-r.x,dz=r.tz-r.z,d=Math.hypot(dx,dz);
+    if(d>40){r.x=r.tx;r.z=r.tz;d=0}
+    if(d>.05){var s=Math.min(d,Math.max(6.5,d*1.2)*dt);r.x+=dx/d*s;r.z+=dz/d*s;r.ry=Math.atan2(dx,dz);r.moving=true}else r.moving=false;
+    r.g.position.set(r.x,.6,r.z);r.g.rotation.y=r.ry;
+    animateAnimal(r.g,'',V.t+k.length,r.moving,false);
+    if(r.lbn!==r.n){r.g.remove(r.lb);r.lb=vLabel(r.n,2.0,.5,26,'rgba(214,236,255,.95)');r.lb.position.set(0,3.0,0);r.g.add(r.lb);r.lbn=r.n}
+    if(r.bub){r.bt-=dt;if(r.bt<=0){r.g.remove(r.bub);r.bub=null}}
+  });
+  /* 自分: 動いている間は1.5秒ごとに送る */
+  NET.acc+=dt;
+  if(V.pl&&V.pl.moving&&NET.acc>1.5){NET.acc=0;netBeat()}
+  else if(V.pl&&!V.pl.moving&&NET.acc>1.5&&(Math.abs(V.pl.x-NET.lastX)>.3||Math.abs(V.pl.z-NET.lastZ)>.3)){NET.acc=0;netBeat()}
+}
+function netDots(x,B,big,w){
+  Object.keys(NET.remotes).forEach(function(k){
+    var r=NET.remotes[k],px=B.X(r.x),pz=B.Z(r.z),rad=big?w/60:w/34;
+    x.beginPath();x.arc(px,pz,rad,0,7);x.fillStyle='#2f86e0';x.fill();x.lineWidth=Math.max(1.5,rad*.35);x.strokeStyle='#fff';x.stroke();
+    if(big){x.font='bold '+Math.round(w/38)+'px sans-serif';x.textAlign='center';x.lineWidth=4;x.strokeStyle='rgba(255,255,255,.95)';x.fillStyle='#1f5fa8';x.strokeText(r.n,px,pz-rad*1.6);x.fillText(r.n,px,pz-rad*1.6)}
+  });
+}
+(function(){
+  setTimeout(netConnect,2500);
+  setInterval(function(){if(NET.ok)netBeat()},12000);
+  window.addEventListener('pagehide',function(){netPublish({i:NET.id,b:1})});
+})();
+
 /* ---------- ループとHUD ---------- */
 var rafId=0,pausedFlag=false;
 function loop(ts){
@@ -4748,7 +4864,7 @@ setTimeout(rankInit,0);
 if(!store.settings.seenHelp)setTimeout(helpOpen,500);
 rafId=requestAnimationFrame(loop);
 try{if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}catch(e){}
-if(location.hash==='#debug')window.__egi={staGet:staGet,staSet:staSet,openCvs:openCvs,openEat:openEat,foodHave:foodHave,CHAT:CHAT,update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
+if(location.hash==='#debug')window.__egi={NET:NET,netOnMsg:netOnMsg,netBubble:netBubble,staGet:staGet,staSet:staSet,openCvs:openCvs,openEat:openEat,foodHave:foodHave,CHAT:CHAT,update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib};
 })();
 </script>
 
