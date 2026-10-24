@@ -212,7 +212,7 @@ textarea.txt{font:inherit;color:var(--ink);background:var(--paper);border:1px so
   <section class="screen" id="s-menu">
     <div class="wrap">
       <header>
-        <p class="eyebrow">テスト版 2.8</p>
+        <p class="eyebrow">テスト版 2.9</p>
         <h1>リアルエギング</h1>
         <p class="lead">実在のポイントと立ち位置を選び、潮と時間帯を読み、エギを選んで、体力が続くかぎり何点釣れるかを競います。体力が減ったら、ごはん(コンビニ)かベッドで回復!ゲームの中では時間が進み、潮もマズメも刻々と変わります。</p>
       </header>
@@ -3234,7 +3234,7 @@ function gyBind(){
 }
 
 /* ---------- v1.3: 遊び方・不具合報告・釣果ノート・称号 ---------- */
-var VER='2.8';
+var VER='2.9';
 var ERRS=[];
 window.addEventListener('error',function(e){try{ERRS.unshift(String(e.message||'error').slice(0,120)+(e.lineno?' @'+e.lineno:''));ERRS=ERRS.slice(0,3)}catch(_){}});
 window.addEventListener('unhandledrejection',function(e){try{ERRS.unshift('promise: '+String(e.reason&&e.reason.message||e.reason).slice(0,100));ERRS=ERRS.slice(0,3)}catch(_){}});
@@ -3693,7 +3693,7 @@ function mkFurn(id){
 }
 
 /* ---- 島のワールド作り・移動・昼夜 ---- */
-var VPOS={shop:{x:-14,z:-12},home:{x:15,z:-12},dockEnd:{x:0,z:48},cvs:{x:0,z:-23}};
+var VPOS={shop:{x:-14,z:-12},home:{x:15,z:-12},dockEnd:{x:0,z:48},cvs:{x:0,z:-23},slot:{x:15,z:-24}};
 function isleGeo(fn,top,bot,seg){
   var g=new THREE.CylinderGeometry(1,1,top-bot,seg||72,1);g.translate(0,(top+bot)/2,0);
   var p=g.attributes.position;
@@ -3765,7 +3765,7 @@ function vilBuild(){
   // 木・花・岩
   var placedT=[];
   function farFromAll(x,z,m){
-    var pts=[[VPOS.shop.x,VPOS.shop.z,8],[VPOS.home.x,VPOS.home.z,7],[0,0,8],[0,-5.5,3.5],[-13,-6,3],[15,-6,3],[-32,-8,6],[-32,6,6],[0,-23,8],[0,-14,3]];
+    var pts=[[VPOS.shop.x,VPOS.shop.z,8],[VPOS.home.x,VPOS.home.z,7],[0,0,8],[0,-5.5,3.5],[-13,-6,3],[15,-6,3],[-32,-8,6],[-32,6,6],[0,-23,8],[0,-14,3],[VPOS.slot.x,VPOS.slot.z,8],[7,-16,3]];
     for(var i=0;i<pts.length;i++)if(Math.hypot(x-pts[i][0],z-pts[i][1])<pts[i][2]+(m||0))return false;
     if(Math.abs(x)<3&&z>3)return false;
     for(var j=0;j<NPCS.length;j++)if(Math.hypot(x-NPCS[j].x,z-NPCS[j].z)<3)return false;
@@ -3802,6 +3802,11 @@ function vilBuild(){
   var cvs=mkBuilding(7,3.6,5,'#eaf7ee','#2a9d5c','コンビニ');cvs.position.set(VPOS.cvs.x,.6,VPOS.cvs.z);W.add(cvs);
   for(var ci2=0;ci2<5;ci2++){var cw=vMesh(vBox(),vMat(ci2%2?'#ffffff':'#2a9d5c'),VPOS.cvs.x-2.4+ci2*1.2,3.0+.6,VPOS.cvs.z+3.2,1.2,.12,1.5);cw.rotation.x=.35;W.add(cw)}
   addCol(VPOS.cvs.x-2,VPOS.cvs.z,2.6);addCol(VPOS.cvs.x+2,VPOS.cvs.z,2.6);
+  pathSeg(W,0,-16,VPOS.slot.x,-16,2.2);pathSeg(W,VPOS.slot.x,-16,VPOS.slot.x,-19.6,2.4);
+  var slb=mkBuilding(8.4,4.2,5.4,'#4a2a7a','#c0392b','パチスロ');slb.position.set(VPOS.slot.x,.6,VPOS.slot.z);W.add(slb);
+  for(var bi=0;bi<9;bi++){var bm=vMat(['#ff5a5a','#ffe14d','#ff8fd0'][bi%3],{emissive:new THREE.Color(0x000000)});V.glows.push(bm);W.add(vMesh(vSphere(),bm,VPOS.slot.x-3.6+bi*.9,4.55+.6,VPOS.slot.z+2.85,.28,.28,.28))}
+  W.add(vMesh(vBox(),vMat('#ffd23d'),VPOS.slot.x,4.9+.6,VPOS.slot.z+2.8,8.6,.18,.12));
+  addCol(VPOS.slot.x-2.6,VPOS.slot.z,2.8);addCol(VPOS.slot.x+2.6,VPOS.slot.z,2.8);
   var sp=new Float32Array(300*3);for(var si=0;si<300;si++){var th=hsh(si*2.1)*Math.PI*2,ph=Math.acos(hsh(si*3.7)*.9+.1);sp[si*3]=Math.sin(ph)*Math.cos(th)*320;sp[si*3+1]=Math.cos(ph)*320;sp[si*3+2]=Math.sin(ph)*Math.sin(th)*320}
   var sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
   V.stars=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false,transparent:true,opacity:0,fog:false,depthWrite:false}));W.add(V.stars);
@@ -4050,6 +4055,7 @@ function vilAction(){
   else if(n.type==='shop')openShop('sell');
   else if(n.type==='home')enterHouse();
   else if(n.type==='cvs')vSay('コンビニ',['いらっしゃいませ〜!','おにぎり、お弁当、ドリンク…体力が減ったらどうぞ。'],{choices:[{t:'買い物する',fn:function(){vSayEnd();openCvs()}},{t:'やめる'}]});
+  else if(n.type==='slot')vSay('パチスロ',['いらっしゃいませ!','ゲーム内のコインで遊べるスロットだよ。','遊びすぎには注意してね!'],{choices:[{t:'あそぶ',fn:function(){vSayEnd();openSlot()}},{t:'やめる'}]});
   else if(n.type==='exit')leaveHouse();
   else if(n.type==='ward')openHouse();
   else if(n.type==='shelf')openTrophy();
@@ -4082,6 +4088,7 @@ function vilNearest(){
   V.npcs.forEach(function(n){var d=Math.hypot(n.x-p.x,n.z-p.z);if(d<2.8)cand(d,{type:'npc',npc:n,label:n.d.name+'と話す'})});
   var ds=Math.hypot(VPOS.shop.x-p.x,VPOS.shop.z+4.3-p.z);if(ds<3)cand(ds+.5,{type:'shop',label:'お店に入る'});
   var dc2=Math.hypot(VPOS.cvs.x-p.x,VPOS.cvs.z+4.3-p.z);if(dc2<3)cand(dc2+.5,{type:'cvs',label:'コンビニに入る'});
+  var dsl=Math.hypot(VPOS.slot.x-p.x,VPOS.slot.z+4.3-p.z);if(dsl<3)cand(dsl+.5,{type:'slot',label:'パチスロに入る'});
   var dh=Math.hypot(VPOS.home.x-p.x,VPOS.home.z+4.0-p.z);if(dh<3)cand(dh+.5,{type:'home',label:'家に入る'});
   var dd=Math.hypot(VPOS.dockEnd.x-p.x,VPOS.dockEnd.z-p.z);if(dd<4.2)cand(dd+.5,{type:'dock',label:'釣りに出かける'});
   CO_MK.forEach(function(m){var d=Math.hypot(m.x-p.x,m.z-p.z);if(d<3.4)cand(d-.5,{type:'spot',mk:m,label:m.s+'で釣る'})});
@@ -4451,6 +4458,7 @@ function coScenery(W){
 function openSpots(){
   var html='<h3>全体図・釣り場へ移動</h3><canvas id="vMapBig" width="660" height="486" style="width:100%;display:block;border-radius:12px;border:2px solid #e3c99a;margin-bottom:8px"></canvas><p style="font-size:12px;color:#8a6b4a;margin:0 0 6px">歩いても行けます。「ワープ」で、その釣り場の入口にすぐ移動します。</p>';
   html+='<div class="vrow"><span><b>マイハウス</b><small>村・自分の家</small></span><button class="vb go" data-v="warpHome" type="button">ワープ</button></div>';
+  html+='<div class="vrow"><span><b>パチスロ</b><small>村・コインで遊ぶ</small></span><button class="vb go" data-v="warpSlot" type="button">ワープ</button></div>';
   CO_MK.forEach(function(m){html+='<div class="vrow"><span><b>'+m.pt.name+'</b><small>'+m.pt.area+'</small></span><button class="vb go" data-v="warp" data-id="'+m.id+'" type="button">ワープ</button></div>'});
   html+='<button class="vb" data-v="toMenu" type="button" style="width:100%;margin-top:10px">メニューの釣り場一覧へ</button><button class="vb" data-v="close" type="button" style="width:100%;margin-top:8px">とじる</button>';
   vOv(html);coMapUpdate();
@@ -4463,6 +4471,10 @@ VACT.warp=function(id){
 VACT.warpHome=function(){
   vOvClose();
   vFadeDo(function(){V.pl.x=VPOS.home.x;V.pl.z=VPOS.home.z+4.2;V.pl.ry=0;V.plG.position.set(V.pl.x,.6,V.pl.z);V.cam.position.set(V.pl.x,14,V.pl.z+18);V.nearest=null;$('#vAct').hidden=true});
+};
+VACT.warpSlot=function(){
+  vOvClose();
+  vFadeDo(function(){V.pl.x=VPOS.slot.x;V.pl.z=VPOS.slot.z+4.2;V.pl.ry=0;V.plG.position.set(V.pl.x,.6,V.pl.z);V.cam.position.set(V.pl.x,14,V.pl.z+18);V.nearest=null;$('#vAct').hidden=true});
 };
 VACT.toMenu=function(){leaveVillage('menu')};
 
@@ -4497,9 +4509,9 @@ function coMapBase(w,h,big){
     x.fillStyle='#e8392f';x.beginPath();x.moveTo(hx-r*1.1,hz-r*.1);x.lineTo(hx,hz-r*1.1);x.lineTo(hx+r*1.1,hz-r*.1);x.closePath();x.fill();x.stroke();
     if(big){x.font='bold '+Math.round(w/30)+'px sans-serif';x.textAlign='center';x.lineWidth=5;x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#c0392b';x.strokeText('マイハウス',hx,hz+r*3.1);x.fillText('マイハウス',hx,hz+r*3.1)}
   })();
-  [[VPOS.shop,'#e86a5c','おみせ'],[VPOS.cvs,'#2a9d5c','コンビニ']].forEach(function(o){var bx=X(o[0].x),bz=Z(o[0].z),r=big?w/70:w/38;
+  [[VPOS.shop,'#e86a5c','おみせ'],[VPOS.cvs,'#2a9d5c','コンビニ'],[VPOS.slot,'#8a3fd1','スロット']].forEach(function(o){var bx=X(o[0].x),bz=Z(o[0].z),r=big?w/70:w/38;
     x.fillStyle=o[1];x.strokeStyle='#fff';x.lineWidth=big?2:1.5;x.beginPath();x.rect(bx-r,bz-r*.8,r*2,r*1.6);x.fill();x.stroke();
-    if(big){x.font='bold '+Math.round(w/36)+'px sans-serif';var left=o[2]==='おみせ';x.textAlign=left?'right':'center';x.lineWidth=4;x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#5a3d24';var lx=left?bx-r*1.5:bx,ly=left?bz+r*.5:bz-r*1.3;x.strokeText(o[2],lx,ly);x.fillText(o[2],lx,ly)}});
+    if(big){x.font='bold '+Math.round(w/36)+'px sans-serif';var left=o[2]==='おみせ',rt=o[2]==='スロット';x.textAlign=left?'right':rt?'left':'center';x.lineWidth=4;x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#5a3d24';var lx=left?bx-r*1.5:rt?bx+r*1.5:bx,ly=(left||rt)?bz+r*.5:bz-r*1.3;x.strokeText(o[2],lx,ly);x.fillText(o[2],lx,ly)}});
   return {c:c,X:X,Z:Z,s:s};
 }
 function coMapDraw(cv,key,big){
@@ -4884,6 +4896,206 @@ function netDots(x,B,big,w){
   window.addEventListener('pagehide',function(){netPublish({i:NET.id,b:1})});
 })();
 
+/* ---- v2.9: スロット店(ゲーム内コインで遊ぶ3リールスロット) ---- */
+var SLOT={
+  sym:{seven:{ch:'7',cls:'s7'},squid:{ch:'🦑'},rod:{ch:'🎣'},fish:{ch:'🐟'},onigiri:{ch:'🍙'},bell:{ch:'🔔'},shrimp:{ch:'🦐'}},
+  strips:[
+    ['fish','shrimp','onigiri','bell','rod','fish','squid','onigiri','shrimp','fish','bell','seven','onigiri','rod','fish','shrimp','onigiri','bell','squid','rod'],
+    ['onigiri','bell','fish','rod','shrimp','squid','fish','onigiri','bell','seven','fish','shrimp','rod','onigiri','squid','fish','rod','onigiri','shrimp','bell'],
+    ['rod','fish','bell','shrimp','onigiri','fish','rod','seven','onigiri','squid','fish','bell','shrimp','onigiri','rod','squid','bell','fish','onigiri','shrimp']
+  ],
+  pay3:{seven:300,squid:80,rod:30,bell:15,fish:12,shrimp:10,onigiri:8},
+  bets:[10,50,100,500],
+  bet:10,idx:[0,0,0],spin:false,stopped:[true,true,true],res:null,iv:0,shown:0,msg:'',won:0,hit:null
+};
+function slotEval(c){
+  /* c = 中段の3つの絵柄id。戻り値: {mul,name} */
+  if(c[0]===c[1]&&c[1]===c[2])return {mul:SLOT.pay3[c[0]],name:c[0]==='seven'?'大当たり!! 7がそろった!':c[0]==='squid'?'イカ大漁!':'3つそろい!',all:true};
+  var n=c.filter(function(x){return x==='shrimp'}).length;
+  if(n===2)return {mul:2,name:'エビ2つ'};
+  if(n===1)return {mul:1,name:'エビ'};
+  return {mul:0,name:'はずれ'};
+}
+function slotRtp(){
+  var S=SLOT.strips,t=0,n=0;
+  for(var a=0;a<20;a++)for(var b=0;b<20;b++)for(var c=0;c<20;c++){t+=slotEval([S[0][a],S[1][b],S[2][c]]).mul;n++}
+  return t/n;
+}
+function slotStat(){var r=rpgInit();if(!r.slot)r.slot={n:0,s:0,w:0};return r.slot}
+function slotCell(i,k){var st=SLOT.strips[i],id=st[((SLOT.idx[i]+k)%20+20)%20],s=SLOT.sym[id];return '<div class="sc '+(s.cls||'')+'">'+s.ch+'</div>'}
+function slotEl(){return document.getElementById('slotFp')}
+function slotDraw(){
+  var m=slotEl();if(!m)return false;
+  for(var i=0;i<3;i++){var r=document.getElementById('slotR'+i);if(r)r.innerHTML=slotCell(i,-1)+slotCell(i,0)+slotCell(i,1)}
+  var c=document.getElementById('slotCoin');if(c)c.textContent=SLOT.shown;
+  var g=document.getElementById('slotMsg');if(g){g.textContent=SLOT.msg;g.className=SLOT.won>0&&!SLOT.spin?'win':''}
+  var co=rpgInit().coin;
+  SLOT.bets.forEach(function(b){var e=document.getElementById('slotB'+b);if(e)e.className='bt'+(SLOT.bet===b?' on':'')+(SLOT.spin?' off':'')});
+  var lv=document.getElementById('slotLever');if(lv)lv.className=(SLOT.spin||co<SLOT.bet)?'off':'';
+  var hint=document.getElementById('slotHint');if(hint)hint.textContent=SLOT.spin?'ボタンを押してリールを止めよう':(co<SLOT.bet?'コインがたりないよ。ベットを下げてね':'レバーを下げてスタート!('+SLOT.bet+'コイン)');
+  for(var j=0;j<3;j++){var sb=document.getElementById('slotS'+j);if(sb)sb.className='stp'+((SLOT.spin&&!SLOT.stopped[j])?' lit':' off')}
+  var st=slotStat(),net=st.w-st.s,ne=document.getElementById('slotNet');
+  if(ne)ne.textContent=st.n+'回 / 収支 '+(net>=0?'+':'')+net;
+  m.className=(SLOT.won>=SLOT.bet*30&&!SLOT.spin?'jp':(SLOT.won>0&&!SLOT.spin?'hit':''))+(SLOT.spin?' run':'');
+  return true;
+}
+function slotHand(el){
+  var m=slotEl();if(!m||!el)return;
+  var a=el.getBoundingClientRect(),b=m.getBoundingClientRect(),h=document.createElement('div');
+  h.className='slotHand';h.textContent='👆';h.style.left=(a.left-b.left+a.width/2-16)+'px';h.style.top=(a.top-b.top+a.height*.35)+'px';
+  m.appendChild(h);setTimeout(function(){if(h.parentNode)h.parentNode.removeChild(h)},420);
+}
+function slotRain(n){
+  var m=slotEl();if(!m)return;
+  for(var i=0;i<n;i++){var c=document.createElement('div');c.className='slotCoinF';c.textContent='🪙';c.style.left=(6+Math.random()*88)+'%';c.style.animationDelay=(Math.random()*.9)+'s';c.style.fontSize=(20+Math.random()*14)+'px';m.appendChild(c);(function(e){setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},2200)})(c)}
+}
+function openSlot(){
+  var r=rpgInit();
+  if(SLOT.spin)slotFinish();
+  SLOT.shown=r.coin;SLOT.msg='いらっしゃいませ!';SLOT.won=0;SLOT.hit=null;
+  var ok=SLOT.bets.filter(function(b){return b<=r.coin});
+  if(r.coin<SLOT.bet)SLOT.bet=ok.length?ok[ok.length-1]:10;
+  var old=slotEl();if(old)old.parentNode.removeChild(old);
+  var el=document.createElement('div');el.id='slotFp';
+  el.innerHTML='<div class="slotRoom"></div>'+
+    '<div class="slotTopbar"><button class="slotX" data-sl="close" type="button">◀ 店を出る</button><div class="slotLed"><small>COIN</small><b id="slotCoin"></b></div></div>'+
+    '<div class="slotMachine">'+
+      '<div class="slotMarq"><span>パチスロ</span><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'+
+      '<div class="slotWindow"><div class="slotLine"></div><div class="slotReels">'+[0,1,2].map(function(i){return '<div class="slotReel" id="slotR'+i+'"></div>'}).join('')+'</div></div>'+
+      '<div class="slotLed2"><div id="slotMsg"></div><div id="slotNet"></div></div>'+
+      '<div class="slotPanel">'+
+        '<div class="slotBetRow"><span>BET</span>'+SLOT.bets.map(function(b){return '<button class="bt" id="slotB'+b+'" data-sl="bet" data-n="'+b+'" type="button">'+b+'</button>'}).join('')+'</div>'+
+        '<div class="slotCtl"><div class="slotStops">'+[0,1,2].map(function(i){return '<button class="stp off" id="slotS'+i+'" data-sl="stop" data-n="'+i+'" type="button"><b>'+(i+1)+'</b></button>'}).join('')+'</div>'+
+        '<button id="slotLever" data-sl="lever" type="button" aria-label="レバー"><span class="lvStick"></span><span class="lvBall"></span><small>レバー</small></button></div>'+
+        '<div id="slotHint"></div>'+
+      '</div>'+
+      '<div class="slotTray"><span>払い出し口</span></div>'+
+    '</div>'+
+    '<details class="slotPay"><summary>配当表</summary><div>7 7 7 … ×300 / 🦑🦑🦑 … ×80 / 🎣🎣🎣 … ×30 / 🔔🔔🔔 … ×15<br>🐟🐟🐟 … ×12 / 🦐🦐🦐 … ×10 / 🍙🍙🍙 … ×8<br>🦐が2つ … ×2 / 🦐が1つ … ×1(中段のライン)<br>ゲーム内のコインだけで遊べます。遊びすぎ注意!</div></details>';
+  el.addEventListener('click',function(e){
+    var b=e.target.closest('[data-sl]');if(!b)return;
+    var a=b.getAttribute('data-sl'),n=+b.getAttribute('data-n');
+    if(a==='close'){slotClose();return}
+    if(a==='bet'){if(SLOT.spin)return;slotHand(b);SLOT.bet=n;vBlip(640,760);slotDraw();return}
+    if(a==='lever'){if(SLOT.spin||rpgInit().coin<SLOT.bet)return;slotHand(b);b.classList.add('pull');setTimeout(function(){b.classList.remove('pull')},380);slotSpin();return}
+    if(a==='stop'){if(!SLOT.spin||SLOT.stopped[n])return;slotHand(b);slotStopReel(n);return}
+  });
+  document.getElementById('app')?document.getElementById('app').appendChild(el):document.body.appendChild(el);
+  V.modal=true;V.joy.x=V.joy.y=0;try{$('#vKnob').style.transform=''}catch(e){}
+  SLOT.keyH=function(ev){
+    if(!slotEl())return;var k=ev.key;
+    if(k==='1'||k==='2'||k==='3'){ev.preventDefault();ev.stopPropagation();var sb=document.getElementById('slotS'+(+k-1));if(sb)sb.click()}
+    else if(k===' '||k==='Enter'){ev.preventDefault();ev.stopPropagation();if(!SLOT.spin){document.getElementById('slotLever').click()}else{for(var j=0;j<3;j++)if(!SLOT.stopped[j]){document.getElementById('slotS'+j).click();break}}}
+    else if(k==='Escape'){slotClose()}
+  };
+  window.addEventListener('keydown',SLOT.keyH,true);
+  slotDraw();
+}
+function slotClose(){
+  if(SLOT.spin)slotFinish();
+  var el=slotEl();if(el)el.parentNode.removeChild(el);
+  window.removeEventListener('keydown',SLOT.keyH,true);
+  V.modal=false;try{vilHud()}catch(e){}
+}
+function slotFinish(){
+  clearInterval(SLOT.iv);SLOT.iv=0;
+  if(!SLOT.spin)return;
+  SLOT.spin=false;SLOT.stopped=[true,true,true];
+  if(SLOT.res)SLOT.idx=SLOT.res.pos.slice();
+  var r=rpgInit();SLOT.shown=r.coin;
+  try{vilHud()}catch(e){}
+  if(!slotEl())return;
+  var ev=SLOT.res.ev;
+  if(SLOT.won>0){
+    SLOT.msg=ev.name+'  +'+SLOT.won;
+    try{if(ev.all&&ev.mul>=30){AU.win();setTimeout(function(){AU.win()},420)}else if(SLOT.won>SLOT.bet){AU.win()}else{vBlip(700,900)}}catch(e){}
+    slotRain(Math.min(40,6+Math.round(SLOT.won/SLOT.bet*2)));
+  }else{SLOT.msg='はずれ…';try{vBlip(300,200)}catch(e){}}
+  slotDraw();
+}
+function slotStopReel(i){
+  if(!SLOT.spin||SLOT.stopped[i])return;
+  SLOT.stopped[i]=true;SLOT.idx[i]=SLOT.res.pos[i];
+  try{AU.init();AU.resume();AU.tone(420+i*90,300+i*60,.07,.08,'square')}catch(e){}
+  slotDraw();
+  if(SLOT.stopped[0]&&SLOT.stopped[1]&&SLOT.stopped[2])setTimeout(slotFinish,160);
+}
+function slotSpin(){
+  var r=rpgInit();
+  if(SLOT.spin||r.coin<SLOT.bet)return;
+  var bet=SLOT.bet,pos=[0,1,2].map(function(){return Math.floor(Math.random()*20)});
+  var ev=slotEval([0,1,2].map(function(i){return SLOT.strips[i][pos[i]]})),pay=bet*ev.mul;
+  /* 結果は回し始めに確定してコインに反映(途中で閉じてもズレない) */
+  r.coin=r.coin-bet+pay;var st=slotStat();st.n++;st.s+=bet;st.w+=pay;save();
+  SLOT.shown=r.coin-pay;/* 画面上はベット分だけ減らした値 */
+  SLOT.res={pos:pos,ev:ev,pay:pay};SLOT.won=pay;SLOT.spin=true;SLOT.stopped=[false,false,false];SLOT.msg='まわれ〜!';
+  try{AU.init();AU.resume();AU.tone(300,520,.12,.07,'square')}catch(e){}
+  var t0=Date.now(),stops=[2600,3600,4600];
+  clearInterval(SLOT.iv);
+  SLOT.iv=setInterval(function(){
+    if(!slotEl()){slotFinish();return}
+    var e=Date.now()-t0;
+    for(var i=0;i<3;i++){
+      if(SLOT.stopped[i])continue;
+      if(e>=stops[i]){slotStopReel(i);continue}
+      SLOT.idx[i]=(SLOT.idx[i]+1+Math.floor(Math.random()*3))%20;
+    }
+    if(SLOT.spin){for(var k=0;k<3;k++){if(SLOT.stopped[k])continue;var rr=document.getElementById('slotR'+k);if(rr)rr.innerHTML=slotCell(k,-1)+slotCell(k,0)+slotCell(k,1)}
+      if(Math.floor(e/70)%2===0){try{AU.tone(260,240,.03,.025,'square')}catch(x){}}}
+  },70);
+  slotDraw();
+}
+(function(){
+  var css=document.createElement('style');
+  css.textContent='#slotFp{position:fixed;inset:0;z-index:95;overflow:hidden;color:#fff;font-family:inherit;touch-action:manipulation;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center}'+
+  '#slotFp .slotRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,#3a2166 0%,#170c2e 62%,#08040f 100%);z-index:0}'+
+  '#slotFp .slotRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(transparent,rgba(0,0,0,.55))}'+
+  '#slotFp .slotTopbar{position:relative;z-index:3;width:100%;max-width:520px;display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 6px}'+
+  '#slotFp .slotX{appearance:none;border:2px solid #e3c99a;background:rgba(255,248,230,.95);color:#5a3d24;border-radius:14px;padding:6px 12px;font:inherit;font-weight:700;font-size:14px;min-height:40px}'+
+  '#slotFp .slotLed{background:#120a20;border:2px solid #4a3a7a;border-radius:10px;padding:2px 12px;text-align:right;min-width:130px}#slotFp .slotLed small{display:block;font-size:10px;color:#9a8ac8;letter-spacing:2px}#slotFp .slotLed b{font:700 26px/1.1 "Courier New",monospace;color:#ffd23d;text-shadow:0 0 8px rgba(255,210,61,.7)}'+
+  '#slotFp .slotMachine{position:relative;z-index:2;width:min(96%,440px);flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 8px 4px;background:linear-gradient(#5b2fa0,#3a1b6e 40%,#2a1352);border:3px solid #e8c04a;border-radius:20px 20px 8px 8px;box-shadow:0 0 30px rgba(150,90,255,.5),inset 0 0 20px rgba(0,0,0,.4);animation:slotBreath 5s ease-in-out infinite;transform-origin:50% 100%}'+
+  '@keyframes slotBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.012) translateY(-2px)}}'+
+  '#slotFp .slotMarq{position:relative;width:100%;height:46px;border-radius:12px;background:linear-gradient(#c0392b,#8e1f16);border:2px solid #ffd23d;display:flex;align-items:center;justify-content:center;font:800 24px/1 sans-serif;letter-spacing:6px;color:#fff6b0;text-shadow:0 0 10px #ffd23d,0 2px 0 #7a1810}'+
+  '#slotFp .slotMarq i{position:absolute;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:#ffe14d;box-shadow:0 0 8px #ffe14d;animation:slotBulb 1s steps(2) infinite}'+
+  '#slotFp .slotMarq i:nth-of-type(1){left:8px}#slotFp .slotMarq i:nth-of-type(2){left:22px;animation-delay:.5s}#slotFp .slotMarq i:nth-of-type(3){left:36px}#slotFp .slotMarq i:nth-of-type(4){left:50px;animation-delay:.5s}#slotFp .slotMarq i:nth-of-type(5){right:50px}#slotFp .slotMarq i:nth-of-type(6){right:36px;animation-delay:.5s}#slotFp .slotMarq i:nth-of-type(7){right:22px}#slotFp .slotMarq i:nth-of-type(8){right:8px;animation-delay:.5s}'+
+  '@keyframes slotBulb{0%{opacity:1}50%{opacity:.25}}'+
+  '#slotFp.hit .slotMarq i,#slotFp.jp .slotMarq i{animation-duration:.2s}#slotFp.jp .slotMachine{animation:slotShake .12s linear infinite}'+
+  '@keyframes slotShake{0%{transform:translate(2px,0)}50%{transform:translate(-2px,1px)}100%{transform:translate(1px,-1px)}}'+
+  '#slotFp .slotWindow{position:relative;width:100%;perspective:600px;padding:6px;background:#1a0f30;border:3px solid #cfd3da;border-radius:14px;box-shadow:inset 0 0 14px #000}'+
+  '#slotFp .slotReels{display:flex;gap:6px;justify-content:center;transform:rotateX(6deg);transform-origin:50% 100%}'+
+  '#slotFp .slotReel{flex:1;background:linear-gradient(90deg,#d9d6e6,#fff 30%,#fff 70%,#d9d6e6);border-radius:8px;overflow:hidden;box-shadow:inset 0 0 12px rgba(0,0,0,.45)}'+
+  '#slotFp .sc{height:clamp(52px,9.5vh,72px);display:flex;align-items:center;justify-content:center;font-size:clamp(34px,6.4vh,48px);line-height:1;color:#222}'+
+  '#slotFp .sc:nth-child(2){background:rgba(255,235,150,.55)}'+
+  '#slotFp .s7{color:#e8392f;font-weight:900;font-size:clamp(42px,7.6vh,58px);text-shadow:0 0 3px #ffd23d,0 0 1px #000;font-family:Georgia,serif}'+
+  '#slotFp .slotLine{position:absolute;left:2px;right:2px;top:50%;height:3px;margin-top:-1px;background:rgba(232,57,47,.85);z-index:3;pointer-events:none;box-shadow:0 0 6px #e8392f}'+
+  '#slotFp.run .slotReel{filter:blur(.6px)}'+
+  '#slotFp.hit .slotWindow{box-shadow:inset 0 0 14px #000,0 0 18px #ffd23d}#slotFp.jp .slotWindow{box-shadow:inset 0 0 14px #000,0 0 28px #ff5ac8;animation:slotJp .25s linear infinite alternate}'+
+  '@keyframes slotJp{from{filter:brightness(1)}to{filter:brightness(1.7)}}'+
+  '#slotFp .slotLed2{width:100%;display:flex;justify-content:space-between;align-items:center;background:#120a20;border:2px solid #4a3a7a;border-radius:10px;padding:4px 10px;min-height:38px;gap:8px}'+
+  '#slotFp #slotMsg{font:700 16px/1.2 sans-serif;color:#9ff0b8;text-shadow:0 0 6px rgba(120,255,170,.5)}#slotFp #slotMsg.win{color:#ffd23d;font-size:19px;text-shadow:0 0 10px rgba(255,210,61,.8)}#slotFp #slotNet{font-size:11px;color:#9a8ac8;white-space:nowrap}'+
+  '#slotFp .slotPanel{width:100%;flex:1;min-height:0;background:linear-gradient(#2b2b36,#1a1a22);border:2px solid #555;border-radius:12px 12px 6px 6px;padding:8px;display:flex;flex-direction:column;gap:8px;box-shadow:inset 0 2px 0 rgba(255,255,255,.12)}'+
+  '#slotFp .slotBetRow{display:flex;gap:6px;align-items:center;font-size:12px;color:#c8c0e0}#slotFp .bt{flex:1;appearance:none;border:2px solid #777;background:linear-gradient(#4a4a58,#2e2e3a);color:#ddd;border-radius:8px;min-height:38px;font:700 14px sans-serif;box-shadow:0 4px 0 #15151c;transition:transform .08s,box-shadow .08s}'+
+  '#slotFp .bt:active{transform:translateY(3px);box-shadow:0 1px 0 #15151c}#slotFp .bt.on{background:linear-gradient(#ffe36a,#e8a81c);color:#4a2a00;border-color:#fff2a0;box-shadow:0 4px 0 #8a5a00,0 0 12px rgba(255,210,61,.6)}#slotFp .bt.off{opacity:.55}'+
+  '#slotFp .slotCtl{display:flex;gap:10px;align-items:center;justify-content:space-between;flex:1;min-height:0}'+
+  '#slotFp .slotStops{display:flex;gap:10px;flex:1;justify-content:space-around;align-items:center}'+
+  '#slotFp .stp{appearance:none;width:clamp(64px,19vw,84px);height:clamp(64px,19vw,84px);border-radius:50%;border:4px solid #ddd;font:900 26px sans-serif;color:#fff;box-shadow:0 7px 0 #1b1b22,0 0 0 2px #000;transition:transform .08s,box-shadow .08s,filter .2s}'+
+  '#slotFp .stp:nth-child(1){background:radial-gradient(circle at 35% 30%,#ff8d8d,#d12727 60%,#8e1515)}#slotFp .stp:nth-child(2){background:radial-gradient(circle at 35% 30%,#8dc4ff,#2767d1 60%,#153a8e)}#slotFp .stp:nth-child(3){background:radial-gradient(circle at 35% 30%,#ffe98d,#d1a127 60%,#8e6a15)}'+
+  '#slotFp .stp:active{transform:translateY(6px);box-shadow:0 1px 0 #1b1b22,0 0 0 2px #000}#slotFp .stp.off{filter:grayscale(.85) brightness(.55)}#slotFp .stp.lit{animation:slotLit .5s ease-in-out infinite alternate}'+
+  '@keyframes slotLit{from{filter:brightness(1)}to{filter:brightness(1.5) drop-shadow(0 0 10px #fff)}}'+
+  '#slotFp #slotLever{appearance:none;position:relative;width:64px;height:clamp(110px,16vh,150px);background:none;border:0;padding:0;color:#c8c0e0;flex:none}#slotFp #slotLever small{position:absolute;left:0;right:0;bottom:-2px;font-size:11px;text-align:center}'+
+  '#slotFp #slotLever .lvStick{position:absolute;left:50%;top:14px;bottom:20px;width:12px;margin-left:-6px;border-radius:6px;background:linear-gradient(90deg,#999,#eee,#777);box-shadow:0 0 0 2px #333;transform-origin:50% 100%;transition:transform .15s}'+
+  '#slotFp #slotLever .lvBall{position:absolute;left:50%;top:0;width:38px;height:38px;margin-left:-19px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9a9a,#d11 65%,#800);box-shadow:0 4px 0 #400,0 0 10px rgba(255,60,60,.6);transition:top .15s}'+
+  '#slotFp #slotLever.pull .lvBall{top:58px}#slotFp #slotLever.pull .lvStick{transform:scaleY(.55)}#slotFp #slotLever.off{opacity:.45}'+
+  '#slotFp #slotHint{font-size:12px;text-align:center;color:#c8c0e0;min-height:16px}'+
+  '#slotFp .slotTray{width:70%;height:30px;border-radius:0 0 18px 18px;background:linear-gradient(#0a0a10,#2a2a34);border:2px solid #555;border-top:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#8a82aa}'+
+  '#slotFp .slotPay{position:relative;z-index:3;width:min(96%,440px);font-size:12px;color:#cfc6f0;margin:4px 0 calc(6px + env(safe-area-inset-bottom,0px))}#slotFp .slotPay summary{cursor:pointer;text-align:center}#slotFp .slotPay div{background:rgba(0,0,0,.6);border-radius:8px;padding:6px 8px;line-height:1.7;margin-top:4px}'+
+  '#slotFp .slotHand{position:absolute;z-index:9;font-size:34px;pointer-events:none;animation:slotHandA .4s ease-out forwards;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}'+
+  '@keyframes slotHandA{0%{transform:translateY(46px) scale(1.2);opacity:0}35%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-6px) scale(.95);opacity:0}}'+
+  '#slotFp .slotCoinF{position:absolute;top:-40px;z-index:8;pointer-events:none;animation:slotFall 1.4s cubic-bezier(.4,0,.8,.6) forwards}'+
+  '@keyframes slotFall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(110vh) rotate(540deg)}}';
+  document.head.appendChild(css);
+})();
+
 /* ---------- ループとHUD ---------- */
 var rafId=0,pausedFlag=false;
 function loop(ts){
@@ -4971,7 +5183,7 @@ setTimeout(rankInit,0);
 if(!store.settings.seenHelp)setTimeout(helpOpen,500);
 rafId=requestAnimationFrame(loop);
 try{if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}catch(e){}
-if(location.hash==='#debug')window.__egi={vSleep:vSleep,NET:NET,netOnMsg:netOnMsg,netBubble:netBubble,staGet:staGet,staSet:staSet,openCvs:openCvs,openEat:openEat,foodHave:foodHave,CHAT:CHAT,update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib,sqShow:sqShow,sqHide:sqHide,startLand:startLand,SQ:SQ};
+if(location.hash==='#debug')window.__egi={vSleep:vSleep,NET:NET,netOnMsg:netOnMsg,netBubble:netBubble,staGet:staGet,staSet:staSet,openCvs:openCvs,openEat:openEat,foodHave:foodHave,CHAT:CHAT,update:update,get G(){return G},startGame:startGame,POINTS:POINTS,doCast:doCast,doJerk:doJerk,doNet:doNet,input:input,setAim:function(v){G.aim=v},store:store,V:V,NPCS:NPCS,talkNpc:talkNpc,openShop:openShop,openBag:openBag,openQuests:openQuests,openHouse:openHouse,landed:landed,rpgCatch:rpgCatch,rpgInit:rpgInit,enterVillage:enterVillage,vSayTap:vSayTap,vilAction:vilAction,DL:DL,makeCond:makeCond,seabed:seabed,forecast:forecast,TS:TS,render:render,hud:hud,drawEgi:drawEgi,ctx:ctx,EGI_COLORS:EGI_COLORS,startFight:startFight,RK:RK,rankSubmit:rankSubmit,rankOf:rankOf,rankStatusText:rankStatusText,setView:function(v){applyView(v)},T3:T3,t3Proj:t3Proj,GY:GY,gyOn:gyOn,gyCalib:gyCalib,sqShow:sqShow,sqHide:sqHide,startLand:startLand,SQ:SQ,openSlot:openSlot,SLOT:SLOT,slotEval:slotEval,slotRtp:slotRtp,slotSpin:slotSpin,slotStopReel:slotStopReel,VPOS:VPOS,walkable:walkable};
 })();
 </script>
 
